@@ -2,6 +2,7 @@ package red.man10.man10shop
 
 import org.bukkit.Bukkit
 import org.bukkit.plugin.java.JavaPlugin
+import red.man10.man10shop.adminshop.Commands
 import red.man10.man10shop.adminshop.ShopData
 import red.man10.man10shop.adminshop.ShopEvent
 import java.util.concurrent.ConcurrentHashMap
@@ -33,6 +34,8 @@ class Man10Shop : JavaPlugin() {
     override fun onEnable() {
         // Plugin startup logic
 
+        saveDefaultConfig()
+
         database = Database()
         adminShopData = ShopData()
 
@@ -42,6 +45,7 @@ class Man10Shop : JavaPlugin() {
         adminShopData.loadShopData()
 
         server.pluginManager.registerEvents(ShopEvent(),this)
+        getCommand("createshop")!!.setExecutor(Commands())
 
 
 

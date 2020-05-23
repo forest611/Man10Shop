@@ -2,7 +2,7 @@ create table merchant_shop_list
 (
 	id int auto_increment,
 	create_player varchar(16) null,
-	uuid varchar(16) null,
+	uuid varchar(36) null,
 	server varchar(16) null,
 	world varchar(16) null,
 	locX int null,

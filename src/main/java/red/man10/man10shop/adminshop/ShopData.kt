@@ -2,10 +2,12 @@ package red.man10.man10shop.adminshop
 
 import org.bukkit.Bukkit
 import org.bukkit.Location
+import org.bukkit.Material
 import org.bukkit.Server
 import org.bukkit.entity.Player
 import org.bukkit.inventory.*
 import red.man10.man10shop.Man10Shop
+import red.man10.man10shop.Man10Shop.Companion.adminShopData
 import red.man10.man10shop.Man10Shop.Companion.database
 import red.man10.man10shop.Man10Shop.Companion.mysqlQueue
 import red.man10.man10shop.Man10Shop.Companion.pl
@@ -90,7 +92,7 @@ class ShopData {
         var id = -1
 
         val rs = mysql.query("SELECT t.*\n" +
-                "           FROM man10shop.op_log t\n" +
+                "           FROM merchant_shop_list t\n" +
                 "           ORDER BY id DESC\n" +
                 "           LIMIT 501;")?:return id
 
@@ -154,7 +156,9 @@ class ShopData {
     //////////////////////////
     fun deleteShop(id:Int,p:Player){
 
-        mysqlQueue.add("DELETE FROM log WHERE id = 1;")
+        Man10Shop.shopMap.remove(id)
+
+        mysqlQueue.add("DELETE FROM merchant_shop_list WHERE id = $id;")
 
         val loc = p.location
 
@@ -198,17 +202,20 @@ class ShopData {
     //result , ing1 , ing2
     fun inventoryToItemStackList(inv:Inventory):MutableList<ItemStack>{
 
-        val list = inv.toList()
 
         val itemStackList = mutableListOf<ItemStack>()
 
         for (i in 0..8){
 
-            if (list.size < i+18)break
+            if (inv.getItem(i) ==null ||inv.getItem(i)!!.type == Material.AIR)break
 
-            itemStackList.add(list[i])
-            itemStackList.add(list[i+9])
-            itemStackList.add(list[i+18])
+            itemStackList.add(inv.getItem(i)!!)
+            if (inv.getItem(i+9) !=null){
+                itemStackList.add(inv.getItem(i+9)!!)
+            }else{
+                itemStackList.add(ItemStack(Material.AIR))
+            }
+            itemStackList.add(inv.getItem(i+18)!!)
 
         }
 
@@ -223,19 +230,19 @@ class ShopData {
         val merchant = Bukkit.createMerchant("AdminShop")
         val merchantList = mutableListOf<MerchantRecipe>()
 
-        for (i in 0 until list.size){
+        var i = 0
+        while (list.size > i+2){
 
-            val recipe = MerchantRecipe(list[i],1000000)
+            val recipe = MerchantRecipe(list[i+2],1000000)
 
+            recipe.addIngredient(list[i])
             recipe.addIngredient(list[i+1])
-            recipe.addIngredient(list[i+2])
 
             recipe.setExperienceReward(false)
 
             merchantList.add(recipe)
 
-            i+2
-
+            i +=3
         }
 
         merchant.recipes = merchantList

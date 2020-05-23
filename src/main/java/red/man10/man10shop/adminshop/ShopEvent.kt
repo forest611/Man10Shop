@@ -38,8 +38,8 @@ class ShopEvent:Listener {
 
         e.setLine(0,"§e§lADMIN SHOP")
         e.setLine(1,"§a§l右クリックで開く")
-        e.setLine(2,"§b§lRIGHT CLICK THIS SIGN")
-        e.setLine(3,"§A§D§M§I§N§S§H§O§P")
+        e.setLine(2,"§b§lRIGHT CLICK!!")
+        e.setLine(3,"§s§h§o§p")
 
         val loc = e.block.location
 
@@ -74,7 +74,7 @@ class ShopEvent:Listener {
 
         val p = e.player
 
-        if (!p.hasPermission("man10shop.use"))
+        if (!p.hasPermission("man10shop.use"))return
 
         if (e.action != Action.RIGHT_CLICK_BLOCK)return
 
@@ -83,8 +83,6 @@ class ShopEvent:Listener {
         if (sign !is Sign)return
 
         if (sign.lines.size != 4)return
-
-        if (sign.lines[3] != "§A§D§M§I§N§S§H§O§P")return
 
         val signLoc = sign.location
         val pLoc = p.location
@@ -102,12 +100,12 @@ class ShopEvent:Listener {
                 "'${p.name}', " +
                 "'${p.uniqueId}', " +
                 "'${p.server.name}', " +
-                "'${pLoc.world}', " +
+                "'${pLoc.world.name}', " +
                 "${pLoc.x}, " +
                 "${pLoc.y}, " +
                 "${pLoc.z}, " +
                 "'OpenAdminShop', " +
-                "'ID:$id);")
+                "'ID:$id');")
     }
 
     @EventHandler
@@ -119,8 +117,6 @@ class ShopEvent:Listener {
         if (sign !is Sign)return
 
         if (sign.lines.size != 4)return
-
-        if (sign.lines[3] != "§A§D§M§I§N§S§H§O§P")return
 
         val loc = sign.location
 
