@@ -1,20 +1,14 @@
 package red.man10.man10shop
 
-import org.bukkit.Bukkit
-import org.bukkit.entity.Player
 import org.bukkit.inventory.*
 import org.bukkit.util.io.BukkitObjectInputStream
 import org.bukkit.util.io.BukkitObjectOutputStream
 import org.yaml.snakeyaml.external.biz.base64Coder.Base64Coder
-import red.man10.man10shop.Man10Shop.Companion.adminShopData
 import red.man10.man10shop.Man10Shop.Companion.mysqlQueue
 import red.man10.man10shop.Man10Shop.Companion.pl
-import red.man10.man10shop.adminshop.ShopData
-import red.man10.man10shop.adminshop.ShopData.*
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.IOException
-import javax.xml.stream.Location
 
 class Database {
 
@@ -24,7 +18,7 @@ class Database {
             val sql = MySQLManager(pl,"Man10ShopQueue")
             try{
                 while (true){
-                    val take = Man10Shop.mysqlQueue.take()
+                    val take = mysqlQueue.take()
                     sql.execute(take)
                 }
             }catch (e:InterruptedException){

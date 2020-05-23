@@ -2,9 +2,9 @@ package red.man10.man10shop
 
 import org.bukkit.Bukkit
 import org.bukkit.plugin.java.JavaPlugin
-import red.man10.man10shop.adminshop.Commands
-import red.man10.man10shop.adminshop.ShopData
-import red.man10.man10shop.adminshop.ShopEvent
+import red.man10.man10shop.merchant.Commands
+import red.man10.man10shop.merchant.ShopData
+import red.man10.man10shop.merchant.ShopEvent
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.LinkedBlockingQueue
 
