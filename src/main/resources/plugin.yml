@@ -1,0 +1,7 @@
+name: Man10Shop
+version: 1.0
+main: red.man10.man10shop.Man10Shop
+api-version: 1.13
+commands:
+  createshop:
+    default: op
