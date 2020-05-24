@@ -10,7 +10,8 @@ import org.bukkit.event.block.SignChangeEvent
 import org.bukkit.event.inventory.InventoryCloseEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import red.man10.man10shop.Man10Shop
-import red.man10.man10shop.Man10Shop.Companion.adminShopData
+import red.man10.man10shop.Man10Shop.Companion.merchantShopData
+import red.man10.man10shop.Man10Shop.Companion.merchantShops
 import red.man10.man10shop.Man10Shop.Companion.mysqlQueue
 import red.man10.man10shop.Man10Shop.Companion.sendOP
 
@@ -33,12 +34,8 @@ class ShopEvent:Listener {
             id = line.replace("AdminShop:","").toInt()
         }
 
-        val data = Man10Shop.shopMap[id]?:return
+        val data = merchantShops[id]?:return
 
-        e.setLine(0,"§e§lADMIN SHOP")
-        e.setLine(1,"§a§l右クリックで開く")
-        e.setLine(2,"§b§lRIGHT CLICK!!")
-        e.setLine(3,"§s§h§o§p")
 
         val loc = e.block.location
 
@@ -48,7 +45,13 @@ class ShopEvent:Listener {
         data.y = loc.blockY
         data.z = loc.blockZ
 
-        adminShopData.updateShopData(data, id, p)
+        merchantShops[id] = data
+
+        merchantShopData.updateShopData(data, id, p)
+
+        e.setLine(0,"§e§lADMIN SHOP")
+        e.setLine(1,"§a§l右クリックで開く")
+        e.setLine(2,"§b§lRIGHT CLICK!!")
 
         //ログ
         mysqlQueue.add("INSERT INTO op_log " +
@@ -81,16 +84,18 @@ class ShopEvent:Listener {
 
         if (sign !is Sign)return
 
-        if (sign.lines.size != 4)return
+        if (sign.lines.size != 3)return
+
+        if (sign.lines[0] != "§e§lADMIN SHOP")return
 
         val signLoc = sign.location
         val pLoc = p.location
 
-        val id = adminShopData.getShop(signLoc,p.server)
+        val id = merchantShopData.getShop(signLoc,p.server)
 
         if (id == -1)return
 
-        p.openMerchant(Man10Shop.shopMap[id]!!.shop,true)
+        p.openMerchant(merchantShops[id]!!.shop,true)
 
         //ログ
         mysqlQueue.add("INSERT INTO log " +
@@ -119,7 +124,7 @@ class ShopEvent:Listener {
 
         val loc = sign.location
 
-        val id = adminShopData.getShop(loc,p.server)
+        val id = merchantShopData.getShop(loc,p.server)
 
         if (id == -1)return
 
@@ -128,7 +133,7 @@ class ShopEvent:Listener {
             return
         }
 
-        adminShopData.deleteShop(id,p)
+        merchantShopData.deleteShop(id,p)
 
         sendOP("§a§l${p.name}がショップを削除しました！")
 
@@ -142,9 +147,8 @@ class ShopEvent:Listener {
         if (e.view.title != "§e§lMan10ShopOp")return
         if (!p.hasPermission("man10shop.op"))return
 
-        adminShopData.registerShop(e.inventory,p)
+        merchantShopData.registerShop(e.inventory,p)
 
     }
-
 
 }

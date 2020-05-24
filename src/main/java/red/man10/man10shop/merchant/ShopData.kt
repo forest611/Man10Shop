@@ -14,36 +14,6 @@ import red.man10.man10shop.MySQLManager
 
 class ShopData {
 
-    //新規ショップを作成
-    fun registerShop(inv:Inventory,p: Player){
-
-        val shopList = inventoryToItemStackList(inv)
-
-        val data = AdminShopData()
-
-        data.shop = itemToMerchant(shopList)
-
-        p.sendMessage("§e§l作成中....")
-
-        Thread(Runnable {
-
-            val id = registerShopData(p,shopList)
-
-            if (id == -1){
-                p.sendMessage("§3§l作成失敗")
-                return@Runnable
-            }
-
-            p.sendMessage("§a§l作成成功！看板にAdminShop:$id と入力してください！")
-
-            Man10Shop.shopMap[id] = data
-
-        }).start()
-
-        Man10Shop.sendOP("§e§l${p.name}が新規ショップを登録しました！")
-
-    }
-
     //サバ起動時にショップデータを読み込む
     fun loadShopData(){
         val mysql = MySQLManager(pl,"Man10ShopLoadShop")
@@ -54,7 +24,7 @@ class ShopData {
 
             val id = rs.getInt("id")
 
-            val data = AdminShopData()
+            val data = MerchantShopData()
 
             data.server = rs.getString("server")
             data.world = rs.getString("world")
@@ -63,9 +33,9 @@ class ShopData {
             data.y = rs.getInt("locY")
             data.z = rs.getInt("locZ")
 
-            data.shop = Man10Shop.adminShopData.itemToMerchant(database.itemStackArrayFromBase64(rs.getString("shop_item")))
+            data.shop = Man10Shop.merchantShopData.itemToMerchant(database.itemStackArrayFromBase64(rs.getString("shop_item")))
 
-            Man10Shop.shopMap[id] = data
+            Man10Shop.merchantShops[id] = data
 
             Bukkit.getLogger().info("Loaded merchant shop ID:$id")
         }
@@ -76,56 +46,68 @@ class ShopData {
         Bukkit.getLogger().info("[Man10Shop]Loaded Al Shop")
     }
 
-    //////////////////////////////////
-    //新規ショップデータの作成とログの保存
-    //////////////////////////////////
-    fun registerShopData(creator:Player, items:MutableList<ItemStack>):Int{
+    ////////////////////////////////////
+    //新規ショップを作成
+    /////////////////////////////////////
+    fun registerShop(inv:Inventory,p: Player){
 
-        val mysql = MySQLManager(pl,"Man10ShopCreated")
+        val shopList = inventoryToItemStackList(inv)
 
-        mysql.execute("INSERT INTO merchant_shop_list " +
-                "(create_player, uuid, shop_item)" +
-                " VALUES (" +
-                "'${creator.name}', " +
-                "'${creator.uniqueId}', " +
-                "'${database.itemStackArrayToBase64(items.toTypedArray())}');")
+        val data = MerchantShopData()
 
-        var id = -1
+        data.shop = itemToMerchant(shopList)
 
-        val rs = mysql.query("SELECT t.*\n" +
-                "           FROM merchant_shop_list t\n" +
-                "           ORDER BY id DESC\n" +
-                "           LIMIT 501;")?:return id
+        p.sendMessage("§e§l作成中....")
 
-        rs.next()
+        Thread(Runnable {
 
-        id = rs.getInt("id")
+            //DBにショップデータを書き込み
 
-        rs.close()
-        mysql.close()
+            val mysql = MySQLManager(pl,"Man10ShopCreated")
 
-        val loc = creator.location
+            mysql.execute("INSERT INTO merchant_shop_list " +
+                    "(create_player, uuid, shop_item)" +
+                    " VALUES (" +
+                    "'${p.name}', " +
+                    "'${p.uniqueId}', " +
+                    "'${database.itemStackArrayToBase64(shopList.toTypedArray())}');")
 
-        mysql.execute("INSERT INTO op_log " +
-                "( player, uuid, server, world, locX, locY, locZ, shop_id, note)" +
-                " VALUES (" +
-                "'${creator.name}', " +
-                "'${creator.uniqueId}', " +
-                "'${creator.server.name}', " +
-                "'${creator.world.name}', " +
-                "${loc.x}, " +
-                "${loc.y}, " +
-                "${loc.z}, " +
-                "${id}, " +
-                "'register');")
+            val id: Int
 
-        return id
+            val rs = mysql.query("SELECT t.*" +
+                    "FROM merchant_shop_list t " +
+                    "ORDER BY id DESC " +
+                    "LIMIT 501; ")?:return@Runnable
+
+            rs.next()
+
+            id = rs.getInt("id")
+
+            rs.close()
+            mysql.close()
+
+            addLog(p,id,"register")
+
+            if (id == -1){
+                p.sendMessage("§3§l作成失敗")
+                return@Runnable
+            }
+
+            p.sendMessage("§a§l作成成功！看板にAdminShop:$id と入力してください！")
+
+            Man10Shop.merchantShops[id] = data
+
+        }).start()
+
+        Man10Shop.sendOP("§e§l${p.name}が新規ショップを登録しました！")
+
     }
+
 
     /////////////////////////////
     //ショップデータをアップデート
     /////////////////////////////
-    fun updateShopData(data:AdminShopData,id:Int,p:Player){
+    fun updateShopData(data:MerchantShopData, id:Int, p:Player){
 
         mysqlQueue.add("UPDATE merchant_shop_list t SET " +
                 "t.server = '${data.server}', " +
@@ -135,20 +117,7 @@ class ShopData {
                 "t.locZ = ${data.z} " +
                 "WHERE t.id = $id")
 
-        val loc = p.location
-
-        mysqlQueue.add("INSERT INTO op_log " +
-                "( player, uuid, server, world, locX, locY, locZ, shop_id, note)" +
-                " VALUES (" +
-                "'${p.name}', " +
-                "'${p.uniqueId}', " +
-                "'${p.server.name}', " +
-                "'${p.world.name}', " +
-                "${loc.x}, " +
-                "${loc.y}, " +
-                "${loc.z}, " +
-                "${id}, " +
-                "'update');")
+        addLog(p,id,"update")
 
     }
 
@@ -157,9 +126,15 @@ class ShopData {
     //////////////////////////
     fun deleteShop(id:Int,p:Player){
 
-        Man10Shop.shopMap.remove(id)
+        Man10Shop.merchantShops.remove(id)
 
         mysqlQueue.add("DELETE FROM merchant_shop_list WHERE id = $id;")
+
+        addLog(p,id,"delete")
+    }
+
+    //ログの保存
+    fun addLog(p:Player,id:Int,note:String){
 
         val loc = p.location
 
@@ -174,16 +149,17 @@ class ShopData {
                 "${loc.y}, " +
                 "${loc.z}, " +
                 "${id}, " +
-                "'delete');")
+                "'$note');")
 
     }
+
 
     ///////////////////////////////////////
     //指定したロケーションにショップがあるかどうか
     ///////////////////////////////////////
     fun getShop(loc:Location,server:Server):Int{
 
-        for (shop in Man10Shop.shopMap){
+        for (shop in Man10Shop.merchantShops){
 
             val data = shop.value
 
@@ -252,7 +228,7 @@ class ShopData {
     }
 
 
-    class AdminShopData{
+    class MerchantShopData{
 
         var server = "server"
         var world = "world"

@@ -27,6 +27,11 @@ class Database {
         }).start()
     }
 
+
+
+    ////////////////////////////////////////
+    //base64 stack
+    /////////////////////////////////////////
     @Throws(IllegalStateException::class)
     fun itemStackArrayToBase64(items: Array<ItemStack>): String {
         try {
@@ -79,4 +84,46 @@ class Database {
         return unwrappedList
     }
 
+
+    ///////////////////////////////
+    //base 64
+    //////////////////////////////
+    fun itemFromBase64(data: String): ItemStack? = try {
+        val inputStream = ByteArrayInputStream(Base64Coder.decodeLines(data))
+        val dataInput = BukkitObjectInputStream(inputStream)
+        val items = arrayOfNulls<ItemStack>(dataInput.readInt())
+
+        // Read the serialized inventory
+        for (i in items.indices) {
+            items[i] = dataInput.readObject() as ItemStack
+        }
+
+        dataInput.close()
+        items[0]
+    } catch (e: Exception) {
+        null
+    }
+
+    @Throws(IllegalStateException::class)
+    fun itemToBase64(item: ItemStack): String {
+        try {
+            val outputStream = ByteArrayOutputStream()
+            val dataOutput = BukkitObjectOutputStream(outputStream)
+            val items = arrayOfNulls<ItemStack>(1)
+            items[0] = item
+            dataOutput.writeInt(items.size)
+
+            for (i in items.indices) {
+                dataOutput.writeObject(items[i])
+            }
+
+            dataOutput.close()
+            val base64: String = Base64Coder.encodeLines(outputStream.toByteArray())
+
+            return base64
+
+        } catch (e: Exception) {
+            throw IllegalStateException("Unable to save item stacks.", e)
+        }
+    }
 }

@@ -10,7 +10,8 @@ create table money_shop_list
 	locY int null,
 	locZ int null,
 	price double null,
-	type varchar(16) null,
+	shop_item text null,
+	type varchar(16) null comment 'Admin:Sell Admin:Buy User:Sell User:Buy',
 	constraint money_shop_list_pk
 		primary key (id)
 );
