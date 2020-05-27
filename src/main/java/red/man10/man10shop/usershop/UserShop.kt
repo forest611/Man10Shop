@@ -2,23 +2,28 @@ package red.man10.man10shop.usershop
 
 import org.bukkit.Bukkit
 import org.bukkit.Location
-import org.bukkit.Server
+import org.bukkit.Material
+import org.bukkit.block.Block
+import org.bukkit.block.BlockFace
+import org.bukkit.block.Chest
 import org.bukkit.entity.Player
+import org.bukkit.event.inventory.InventoryType
+import org.bukkit.inventory.Inventory
 import org.bukkit.inventory.ItemStack
-import org.bukkit.inventory.PlayerInventory
 import red.man10.man10shop.Man10Shop
-import red.man10.man10shop.Man10Shop.Companion.database
 import red.man10.man10shop.Man10Shop.Companion.mysqlQueue
-import red.man10.man10shop.Man10Shop.Companion.pl
-import red.man10.man10shop.Man10Shop.Companion.userShops
 import red.man10.man10shop.MySQLManager
 import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 
-class ShopData {
+class UserShop {
 
-    fun loadShopData(){
+    val shopData = ConcurrentHashMap<Int,UserShopData>()
 
-        val mysql = MySQLManager(pl,"Man10ShopLoadShop")
+
+    fun loadShops(){
+
+        val mysql = MySQLManager(Man10Shop.pl,"Man10ShopLoadShop")
 
         val rs = mysql.query("SELECT * FROM money_shop_list WHERE type='User:Sell' or type='User:Buy';")?:return
 
@@ -40,19 +45,24 @@ class ShopData {
 
             data.type = rs.getString("type")
 
-            data.item = database.itemFromBase64(rs.getString("shop_item"))
+            data.item = Man10Shop.database.itemFromBase64(rs.getString("shop_item"))
 
-            userShops[id] = data
+            shopData[id] = data
         }
 
         rs.close()
         mysql.close()
     }
 
-    ////////////////////////////////
-    //新規ショップを登録
-    ////////////////////////////////
-    fun registerShop(p: Player,price:Double,isSell:Boolean,loc:Location){
+
+    /**
+     * 新規ショップを作成
+     * @param p 作者
+     * @param price ショップの値段
+     * @param isSell trueなら買取、falseなら販売
+     * @param loc ショップのロケーション
+     */
+    fun createShop(p: Player, price:Double, isSell:Boolean, loc: Location){
 
         val data = UserShopData()
 
@@ -72,7 +82,7 @@ class ShopData {
 
             //DBにデータを書き込み
 
-            val mysql = MySQLManager(pl,"Man10ShopCreated")
+            val mysql = MySQLManager(Man10Shop.pl,"Man10ShopCreated")
 
             mysql.execute("INSERT money_shop_list (" +
                     "owner_player, owner_uuid, server, world, locX, locY, locZ, price, type) " +
@@ -101,7 +111,8 @@ class ShopData {
             rs.close()
             mysql.close()
 
-            userShops[id] = data
+
+            shopData[id] = data
 
             addLog(p,"CreateUserShop","ID:$id price:$price")
 
@@ -111,30 +122,29 @@ class ShopData {
 
     }
 
-    //ショップのデータをアップデート
-    fun updateShop(p:Player,item:ItemStack,id:Int){
-        val data = userShops[id]?:return
+    /**
+     * ショップデータを保存する
+     *
+     */
+    fun set(p:Player,id:Int,data:UserShopData){
 
-        data.item = item
+        shopData[id] = data
 
-        userShops[id] = data
-
-        val loc = p.location
-
-        //アップデート
-        mysqlQueue.add("UPDATE money_shop_list t SET t.shop_item = '${database.itemToBase64(item)}' WHERE t.id = $id")
+        mysqlQueue.add("UPDATE money_shop_list t SET t.shop_item = '${Man10Shop.database.itemToBase64(data.item!!)}' WHERE t.id = $id")
 
         addLog(p,"UpdateUserShop","ID:$id")
+
     }
 
     fun deleteShop(p:Player,id:Int){
 
-        userShops.remove(id)
+        shopData.remove(id)
 
         mysqlQueue.add("DELETE FROM money_shop_list WHERE id = $id;")
 
         addLog(p,"DeleteUserShop","ID:$id")
     }
+
 
     //ログの保存
     fun addLog(p: Player,type:String,note:String){
@@ -154,28 +164,6 @@ class ShopData {
                 "'$note');")
 
     }
-
-    ///////////////////////////////////////
-    //指定したロケーションにショップがあるかどうか
-    ///////////////////////////////////////
-    fun getShop(loc:Location,server: Server):Int{
-
-        for (shop in userShops){
-
-            val data = shop.value
-
-            if (data.server != server.name)continue
-            if (data.world!= loc.world.name)continue
-            if (data.x != loc.blockX)continue
-            if (data.y != loc.blockY)continue
-            if (data.z != loc.blockZ)continue
-
-            return shop.key
-        }
-
-        return -1
-    }
-
 
     class UserShopData{
 
@@ -198,5 +186,4 @@ class ShopData {
 
 
 }
-
 

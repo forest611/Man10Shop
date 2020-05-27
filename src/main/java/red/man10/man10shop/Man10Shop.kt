@@ -6,7 +6,7 @@ import red.man10.man10shop.merchant.Commands
 import red.man10.man10shop.merchant.ShopData
 import red.man10.man10shop.merchant.ShopData.MerchantShopData
 import red.man10.man10shop.merchant.ShopEvent
-import red.man10.man10shop.usershop.ShopData.UserShopData
+import red.man10.man10shop.usershop.UserShop
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.LinkedBlockingQueue
 
@@ -15,13 +15,12 @@ class Man10Shop : JavaPlugin() {
     companion object{
 
         var merchantShops = ConcurrentHashMap<Int, MerchantShopData>()
-        var userShops = ConcurrentHashMap<Int, UserShopData>()
 
         var mysqlQueue = LinkedBlockingQueue<String>()
 
         lateinit var database: Database
         lateinit var merchantShopData: ShopData
-        lateinit var userShopData : red.man10.man10shop.usershop.ShopData
+        lateinit var userShop : UserShop
         lateinit var pl : Man10Shop
 
         //OPにのみメッセージを送る
@@ -42,19 +41,18 @@ class Man10Shop : JavaPlugin() {
 
         database = Database()
         merchantShopData = ShopData()
-        userShopData = red.man10.man10shop.usershop.ShopData()
+        userShop = UserShop()
 
         database.mysqlQueue()
         pl = this
 
         //ショップデータの読み込み
         merchantShopData.loadShopData()
-        userShopData.loadShopData()
+        userShop.loadShops()
 
         server.pluginManager.registerEvents(ShopEvent(),this)
+        server.pluginManager.registerEvents(red.man10.man10shop.usershop.ShopEvent(),this)
         getCommand("createshop")!!.setExecutor(Commands())
-
-
 
     }
 
