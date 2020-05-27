@@ -18,7 +18,7 @@ class Man10Shop : JavaPlugin() {
         var mysqlQueue = LinkedBlockingQueue<String>()
 
         lateinit var database: Database
-        lateinit var merchantMerchantShop: MerchantShop
+        lateinit var merchantShop: MerchantShop
         lateinit var pl : Man10Shop
 
         //OPにのみメッセージを送る
@@ -38,13 +38,13 @@ class Man10Shop : JavaPlugin() {
         saveDefaultConfig()
 
         database = Database()
-        merchantMerchantShop = MerchantShop()
+        merchantShop = MerchantShop()
 
         database.mysqlQueue()
         pl = this
 
         //ショップデータの読み込み
-        merchantMerchantShop.loadShopData()
+        merchantShop.loadShopData()
 
         server.pluginManager.registerEvents(ShopEvent(),this)
         getCommand("createshop")!!.setExecutor(Commands())

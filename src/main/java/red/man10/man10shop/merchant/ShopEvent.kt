@@ -9,12 +9,14 @@ import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.block.SignChangeEvent
 import org.bukkit.event.inventory.InventoryCloseEvent
 import org.bukkit.event.player.PlayerInteractEvent
-import red.man10.man10shop.Man10Shop.Companion.merchantMerchantShop
+import red.man10.man10shop.Man10Shop.Companion.merchantShop
 import red.man10.man10shop.Man10Shop.Companion.merchantShops
 import red.man10.man10shop.Man10Shop.Companion.mysqlQueue
 import red.man10.man10shop.Man10Shop.Companion.sendOP
 
 class ShopEvent:Listener {
+
+    val shopTitle = "§e§lADMIN SHOP"
 
     @EventHandler
     fun setShopEvent(e:SignChangeEvent){
@@ -46,25 +48,14 @@ class ShopEvent:Listener {
 
         merchantShops[id] = data
 
-        merchantMerchantShop.updateShop(data, id, p)
+        merchantShop.updateShop(data, id, p)
 
-        e.setLine(0,"§e§lADMIN SHOP")
+        e.setLine(0,shopTitle)
         e.setLine(1,"§a§l右クリックで開く")
-        e.setLine(2,"§b§lRIGHT CLICK!!")
+        e.setLine(2,"§b§lRIGHT CLICK")
+        e.setLine(3,"§b§lSIGN")
 
-        //ログ
-        mysqlQueue.add("INSERT INTO op_log " +
-                "( player, uuid, server, world, locX, locY, locZ, shop_id, note)" +
-                " VALUES (" +
-                "'${p.name}', " +
-                "'${p.uniqueId}', " +
-                "'${p.server.name}', " +
-                "'${p.world.name}', " +
-                "${loc.x}, " +
-                "${loc.y}, " +
-                "${loc.z}, " +
-                "${id}, " +
-                "'PlaceShopSign');")
+        merchantShop.addLog(p,id,"PlaceShopSign")
 
         sendOP("§a§l${p.name}がショップを設置しました！")
 
@@ -83,14 +74,14 @@ class ShopEvent:Listener {
 
         if (sign !is Sign)return
 
-        if (sign.lines.size != 3)return
+        if (sign.lines.size != 4)return
 
-        if (sign.lines[0] != "§e§lADMIN SHOP")return
+        if (sign.lines[0] != shopTitle)return
 
         val signLoc = sign.location
         val pLoc = p.location
 
-        val id = merchantMerchantShop.getShop(signLoc,p.server)
+        val id = merchantShop.getShop(signLoc,p.server)
 
         if (id == -1)return
 
@@ -107,10 +98,13 @@ class ShopEvent:Listener {
                 "${pLoc.x}, " +
                 "${pLoc.y}, " +
                 "${pLoc.z}, " +
-                "'OpenAdminShop', " +
+                "'OpenMerchantShop', " +
                 "'ID:$id');")
     }
 
+    //////////////////////////////
+    //ショップを破壊
+    ///////////////////////////////
     @EventHandler
     fun breakShop(e:BlockBreakEvent){
         val p = e.player
@@ -123,7 +117,7 @@ class ShopEvent:Listener {
 
         val loc = sign.location
 
-        val id = merchantMerchantShop.getShop(loc,p.server)
+        val id = merchantShop.getShop(loc,p.server)
 
         if (id == -1)return
 
@@ -132,12 +126,15 @@ class ShopEvent:Listener {
             return
         }
 
-        merchantMerchantShop.deleteShop(id,p)
+        merchantShop.deleteShop(id,p)
 
         sendOP("§a§l${p.name}がショップを削除しました！")
 
     }
 
+    /////////////////////////
+    //新規ショップを作成
+    ////////////////////////
     @EventHandler
     fun inventoryClose(e:InventoryCloseEvent){
 
@@ -146,7 +143,7 @@ class ShopEvent:Listener {
         if (e.view.title != "§e§lMan10ShopOp")return
         if (!p.hasPermission("man10shop.op"))return
 
-        merchantMerchantShop.createShop(e.inventory,p)
+        merchantShop.createShop(e.inventory,p)
 
     }
 

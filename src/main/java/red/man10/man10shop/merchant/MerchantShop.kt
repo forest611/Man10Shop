@@ -33,7 +33,7 @@ class MerchantShop {
             data.y = rs.getInt("locY")
             data.z = rs.getInt("locZ")
 
-            data.shop = Man10Shop.merchantMerchantShop.itemToMerchant(database.itemStackArrayFromBase64(rs.getString("shop_item")))
+            data.shop = Man10Shop.merchantShop.itemToMerchant(database.itemStackArrayFromBase64(rs.getString("shop_item")),id)
 
             Man10Shop.merchantShops[id] = data
 
@@ -52,8 +52,6 @@ class MerchantShop {
         val shopList = inventoryToItemStackList(inv)
 
         val data = MerchantShopData()
-
-        data.shop = itemToMerchant(shopList)
 
         p.sendMessage("§e§l作成中....")
 
@@ -83,6 +81,8 @@ class MerchantShop {
 
             rs.close()
             mysql.close()
+
+            data.shop = itemToMerchant(shopList,id)
 
             addLog(p,id,"register")
 
@@ -200,9 +200,9 @@ class MerchantShop {
     /////////////////////////////////////////
     //ItemStackのリストからショップのレシピを作る
     /////////////////////////////////////////
-    fun itemToMerchant(list: MutableList<ItemStack>): Merchant {
+    fun itemToMerchant(list: MutableList<ItemStack>,id:Int): Merchant {
 
-        val merchant = Bukkit.createMerchant("AdminShop")
+        val merchant = Bukkit.createMerchant("AdminShop:$id")
         val merchantList = mutableListOf<MerchantRecipe>()
 
         var i = 0
