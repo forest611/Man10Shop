@@ -3,10 +3,9 @@ package red.man10.man10shop
 import org.bukkit.Bukkit
 import org.bukkit.plugin.java.JavaPlugin
 import red.man10.man10shop.merchant.Commands
-import red.man10.man10shop.merchant.ShopData
-import red.man10.man10shop.merchant.ShopData.MerchantShopData
+import red.man10.man10shop.merchant.MerchantShop
+import red.man10.man10shop.merchant.MerchantShop.MerchantShopData
 import red.man10.man10shop.merchant.ShopEvent
-import red.man10.man10shop.usershop.UserShop
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.LinkedBlockingQueue
 
@@ -19,8 +18,7 @@ class Man10Shop : JavaPlugin() {
         var mysqlQueue = LinkedBlockingQueue<String>()
 
         lateinit var database: Database
-        lateinit var merchantShopData: ShopData
-        lateinit var userShop : UserShop
+        lateinit var merchantMerchantShop: MerchantShop
         lateinit var pl : Man10Shop
 
         //OPにのみメッセージを送る
@@ -40,18 +38,15 @@ class Man10Shop : JavaPlugin() {
         saveDefaultConfig()
 
         database = Database()
-        merchantShopData = ShopData()
-        userShop = UserShop()
+        merchantMerchantShop = MerchantShop()
 
         database.mysqlQueue()
         pl = this
 
         //ショップデータの読み込み
-        merchantShopData.loadShopData()
-        userShop.loadShops()
+        merchantMerchantShop.loadShopData()
 
         server.pluginManager.registerEvents(ShopEvent(),this)
-        server.pluginManager.registerEvents(red.man10.man10shop.usershop.ShopEvent(),this)
         getCommand("createshop")!!.setExecutor(Commands())
 
     }

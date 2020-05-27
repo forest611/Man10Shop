@@ -12,7 +12,7 @@ import red.man10.man10shop.Man10Shop.Companion.mysqlQueue
 import red.man10.man10shop.Man10Shop.Companion.pl
 import red.man10.man10shop.MySQLManager
 
-class ShopData {
+class MerchantShop {
 
     //サバ起動時にショップデータを読み込む
     fun loadShopData(){
@@ -33,7 +33,7 @@ class ShopData {
             data.y = rs.getInt("locY")
             data.z = rs.getInt("locZ")
 
-            data.shop = Man10Shop.merchantShopData.itemToMerchant(database.itemStackArrayFromBase64(rs.getString("shop_item")))
+            data.shop = Man10Shop.merchantMerchantShop.itemToMerchant(database.itemStackArrayFromBase64(rs.getString("shop_item")))
 
             Man10Shop.merchantShops[id] = data
 
@@ -42,14 +42,12 @@ class ShopData {
 
         rs.close()
         mysql.close()
-
-        Bukkit.getLogger().info("[Man10Shop]Loaded Al Shop")
     }
 
     ////////////////////////////////////
     //新規ショップを作成
     /////////////////////////////////////
-    fun registerShop(inv:Inventory,p: Player){
+    fun createShop(inv:Inventory, p: Player){
 
         val shopList = inventoryToItemStackList(inv)
 
@@ -107,7 +105,7 @@ class ShopData {
     /////////////////////////////
     //ショップデータをアップデート
     /////////////////////////////
-    fun updateShopData(data:MerchantShopData, id:Int, p:Player){
+    fun updateShop(data:MerchantShopData, id:Int, p:Player){
 
         mysqlQueue.add("UPDATE merchant_shop_list t SET " +
                 "t.server = '${data.server}', " +

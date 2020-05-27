@@ -9,8 +9,7 @@ import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.block.SignChangeEvent
 import org.bukkit.event.inventory.InventoryCloseEvent
 import org.bukkit.event.player.PlayerInteractEvent
-import red.man10.man10shop.Man10Shop
-import red.man10.man10shop.Man10Shop.Companion.merchantShopData
+import red.man10.man10shop.Man10Shop.Companion.merchantMerchantShop
 import red.man10.man10shop.Man10Shop.Companion.merchantShops
 import red.man10.man10shop.Man10Shop.Companion.mysqlQueue
 import red.man10.man10shop.Man10Shop.Companion.sendOP
@@ -47,7 +46,7 @@ class ShopEvent:Listener {
 
         merchantShops[id] = data
 
-        merchantShopData.updateShopData(data, id, p)
+        merchantMerchantShop.updateShop(data, id, p)
 
         e.setLine(0,"§e§lADMIN SHOP")
         e.setLine(1,"§a§l右クリックで開く")
@@ -91,7 +90,7 @@ class ShopEvent:Listener {
         val signLoc = sign.location
         val pLoc = p.location
 
-        val id = merchantShopData.getShop(signLoc,p.server)
+        val id = merchantMerchantShop.getShop(signLoc,p.server)
 
         if (id == -1)return
 
@@ -124,7 +123,7 @@ class ShopEvent:Listener {
 
         val loc = sign.location
 
-        val id = merchantShopData.getShop(loc,p.server)
+        val id = merchantMerchantShop.getShop(loc,p.server)
 
         if (id == -1)return
 
@@ -133,7 +132,7 @@ class ShopEvent:Listener {
             return
         }
 
-        merchantShopData.deleteShop(id,p)
+        merchantMerchantShop.deleteShop(id,p)
 
         sendOP("§a§l${p.name}がショップを削除しました！")
 
@@ -147,7 +146,7 @@ class ShopEvent:Listener {
         if (e.view.title != "§e§lMan10ShopOp")return
         if (!p.hasPermission("man10shop.op"))return
 
-        merchantShopData.registerShop(e.inventory,p)
+        merchantMerchantShop.createShop(e.inventory,p)
 
     }
 
