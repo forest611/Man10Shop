@@ -9,6 +9,8 @@ import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.block.SignChangeEvent
 import org.bukkit.event.inventory.InventoryCloseEvent
 import org.bukkit.event.player.PlayerInteractEvent
+import red.man10.man10shop.Man10Shop
+import red.man10.man10shop.Man10Shop.Companion.database
 import red.man10.man10shop.Man10Shop.Companion.merchantShop
 import red.man10.man10shop.Man10Shop.Companion.merchantShops
 import red.man10.man10shop.Man10Shop.Companion.mysqlQueue
@@ -55,7 +57,7 @@ class ShopEvent:Listener {
         e.setLine(2,"§b§lRIGHT CLICK")
         e.setLine(3,"§b§lSIGN")
 
-        merchantShop.addLog(p,id,"PlaceShopSign")
+        database.logOP(p,id,"PlaceShopSign")
 
         sendOP("§a§l${p.name}がショップを設置しました！")
 
@@ -63,6 +65,8 @@ class ShopEvent:Listener {
 
     @EventHandler
     fun clickShopEvent(e:PlayerInteractEvent){
+
+        if (!Man10Shop.pluginEnable)return
 
         val p = e.player
 
@@ -107,6 +111,9 @@ class ShopEvent:Listener {
     ///////////////////////////////
     @EventHandler
     fun breakShop(e:BlockBreakEvent){
+
+        if (!Man10Shop.pluginEnable)return
+
         val p = e.player
 
         val sign = e.block.state

@@ -9,7 +9,6 @@ create table log
 	locX double null,
 	locY double null,
 	locZ double null,
-	logType varchar(16) null,
 	note varchar(32) null,
 	price double null,
 	constraint log_pk

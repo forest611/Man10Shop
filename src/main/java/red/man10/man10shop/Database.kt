@@ -1,5 +1,6 @@
 package red.man10.man10shop
 
+import org.bukkit.entity.Player
 import org.bukkit.inventory.*
 import org.bukkit.util.io.BukkitObjectInputStream
 import org.bukkit.util.io.BukkitObjectOutputStream
@@ -28,6 +29,46 @@ class Database {
     }
 
 
+
+    //ログの保存
+    fun logOP(p: Player, id:Int, note:String){
+
+        val loc = p.location
+
+        mysqlQueue.add("INSERT INTO op_log " +
+                "( player, uuid, server, world, locX, locY, locZ, shop_id, note)" +
+                " VALUES (" +
+                "'${p.name}', " +
+                "'${p.uniqueId}', " +
+                "'${p.server.name}', " +
+                "'${p.world.name}', " +
+                "${loc.x}, " +
+                "${loc.y}, " +
+                "${loc.z}, " +
+                "${id}, " +
+                "'$note');")
+
+    }
+
+
+    fun logNormal(p:Player,note:String,price:Double){
+
+        val loc = p.location
+
+        mysqlQueue.add("INSERT INTO log " +
+                "(player, uuid, server, world, locX, locY, locZ, " +
+                "note, price) VALUES(" +
+                "'${p.name}', " +
+                "'${p.uniqueId}', " +
+                "'${p.server.name}', " +
+                "'${loc.world.name}', " +
+                "${loc.x}, " +
+                "${loc.y}, " +
+                "${loc.z}, " +
+                "'$note', " +
+                "$price);")
+
+    }
 
     ////////////////////////////////////////
     //base64 stack

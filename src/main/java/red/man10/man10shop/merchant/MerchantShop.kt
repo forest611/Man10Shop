@@ -84,7 +84,7 @@ class MerchantShop {
 
             data.shop = itemToMerchant(shopList,id)
 
-            addLog(p,id,"register")
+            database.logOP(p,id,"register")
 
             if (id == -1){
                 p.sendMessage("§3§l作成失敗")
@@ -115,7 +115,7 @@ class MerchantShop {
                 "t.locZ = ${data.z} " +
                 "WHERE t.id = $id")
 
-        addLog(p,id,"update")
+        database.logOP(p,id,"update")
 
     }
 
@@ -128,29 +128,8 @@ class MerchantShop {
 
         mysqlQueue.add("DELETE FROM merchant_shop_list WHERE id = $id;")
 
-        addLog(p,id,"delete")
+        database.logOP(p,id,"delete")
     }
-
-    //ログの保存
-    fun addLog(p:Player,id:Int,note:String){
-
-        val loc = p.location
-
-        mysqlQueue.add("INSERT INTO op_log " +
-                "( player, uuid, server, world, locX, locY, locZ, shop_id, note)" +
-                " VALUES (" +
-                "'${p.name}', " +
-                "'${p.uniqueId}', " +
-                "'${p.server.name}', " +
-                "'${p.world.name}', " +
-                "${loc.x}, " +
-                "${loc.y}, " +
-                "${loc.z}, " +
-                "${id}, " +
-                "'$note');")
-
-    }
-
 
     ///////////////////////////////////////
     //指定したロケーションにショップがあるかどうか
