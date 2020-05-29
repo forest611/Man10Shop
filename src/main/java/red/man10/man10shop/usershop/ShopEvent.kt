@@ -1,7 +1,7 @@
 package red.man10.man10shop.usershop
 
 import org.apache.commons.lang.math.NumberUtils
-import org.bukkit.block.data.type.Sign
+import org.bukkit.block.Sign
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
@@ -29,20 +29,20 @@ class ShopEvent : Listener{
 
         if (!p.hasPermission(CREATE))return
 
-        val lines = e.lines
+        val lines = e.lines.clone()
 
-        if (lines[0].indexOf("usershop") != 0)return
+        if (lines[0].indexOf("shop") != 0)return
 
         if (!NumberUtils.isNumber(lines[1]))return
 
-        val isBuy = lines[0].replace("usershop","") == "buy"
+        val isBuy = lines[0].replace("shop","") == "b"
 
         userShop.create(p,e.block.location,lines[1].toDouble(),isBuy)
 
         e.setLine(0, USERSHOP)
         e.setLine(1,"§b§l${p.name}")
-        e.setLine(2,"${if (isBuy) "§d§l販売中:" else "§b§l買取中:"}§e§l${lines[1]}")
-        e.setLine(3,lines[2])
+        e.setLine(2,"${if (isBuy) "§d§lB" else "§b§lS"}§e§l${lines[1]}")
+        e.setLine(3,lines[2].replace("&","§"))
 
     }
 
@@ -61,16 +61,24 @@ class ShopEvent : Listener{
 
         if (sign !is Sign)return
 
-        val shop = userShop.getShop(e.clickedBlock!!.location)?:return
+        val shop = userShop.getShop(sign.location,p.server.name)?:return
 
         //取引する
         if (e.action == Action.RIGHT_CLICK_BLOCK){
-            userShop.tradeItem(shop.first,p, p.isSneaking)
+
+            if (userShop.tradeItem(shop.first,p, p.isSneaking)){
+                p.sendMessage("§a§l取引成功！")
+            }else{
+                p.sendMessage("§3§l取引失敗、所持金が足りない可能性があります")
+            }
+
             return
         }
 
         //コンテナの中身を見る
-        if (p.uniqueId == shop.second.ownerUUId && e.action == Action.LEFT_CLICK_BLOCK && p.isSneaking){
+        if (p.uniqueId == shop.second.ownerUUId && e.action == Action.LEFT_CLICK_BLOCK && !p.isSneaking){
+
+            e.isCancelled = true
 
             userShop.openContainer(p,shop.first)
 
@@ -88,11 +96,11 @@ class ShopEvent : Listener{
 
         val sign = e.block
 
-        if (sign !is Sign)return
-
-        val pair = userShop.getShop(sign.location) ?: return
+        val pair = userShop.getShop(sign.location,p.server.name) ?: return
 
         if (p.uniqueId != pair.second.ownerUUId)return
+
+        if (!p.isSneaking)return
 
         userShop.deleteShop(pair.first,p)
 

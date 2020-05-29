@@ -50,6 +50,8 @@ class UserShop {
 
             data.container = database.itemStackArrayFromBase64(rs.getString("shop_container"))
 
+            data.price = rs.getDouble("price")
+
             userShop[id] = data
 
             Bukkit.getLogger().info("Loaded user shop ID:$id")
@@ -92,16 +94,17 @@ class UserShop {
 
             mysql.execute("INSERT INTO user_shop_list " +
                     "(player, uuid, server, world, " +
-                    "locX, locY, locZ, buy, price) " +
+                    "locX, locY, locZ, buy, price,shop_container) " +
                     "VALUES (" +
                     "'${p.name}', " +
                     "'${p.uniqueId}', " +
                     "'${p.server.name}', " +
-                    "'${location.world}', " +
+                    "'${location.world.name}', " +
                     "${data.loc.first}, " +
                     "${data.loc.second}, " +
                     "${data.loc.third}, " +
-                    "$price, ${if (isBuy) 1 else 0});")
+                    "${if (isBuy) 1 else 0}, $price," +
+                    "'${database.itemStackArrayToBase64(data.container.toTypedArray())}');")
 
             val rs = mysql.query("SELECT t.*" +
                     "FROM user_shop_list t " +
@@ -132,15 +135,23 @@ class UserShop {
 
         val data = userShop[id]?:return
 
-        data.container = container.toMutableList()
+        val list = mutableListOf<ItemStack>()
 
-        userShop[id] = data
+        for (i in 0..53){
+            val item = container.getItem(i)
+            if (item == null || item.type == Material.AIR)continue
+            list.add(item)
+        }
+
+        data.container = list
+
+        set(id,data)
 
         mysqlQueue.add("UPDATE user_shop_list t SET " +
                 "t.shop_container = '${database.itemStackArrayToBase64(data.container.toTypedArray())}' " +
                 "WHERE t.id = $id;")
 
-        database.logNormal(p,"UpdateShop ID:$id",data.price)
+        database.logNormal(p,"UpdateShop ID:$id",0.0)
 
     }
 
@@ -161,13 +172,18 @@ class UserShop {
      *
      * @return id ショップのデータ
      */
-    fun getShop(location: Location): Pair<Int, UserShopData>? {
+    fun getShop(location: Location,server:String): Pair<Int, UserShopData>? {
 
         for (data in userShop){
 
-            if (data.value.loc.first !=location.blockX)continue
-            if (data.value.loc.second !=location.blockY)continue
-            if (data.value.loc.third !=location.blockZ)continue
+            val value = data.value
+
+            if (value.server != server)continue
+            if (value.world != location.world.name)continue
+
+            if (value.loc.first !=location.blockX)continue
+            if (value.loc.second !=location.blockY)continue
+            if (value.loc.third !=location.blockZ)continue
 
             return Pair(data.key,data.value)
         }
@@ -185,13 +201,16 @@ class UserShop {
 
         val data = get(id)
 
+        if(data.container.isEmpty())return false
+
         ///////////////購入//////////////////
         if (data.isBuy) {
 
             val container = data.container
-            val item = data.container[0]
+            val item = container[container.size-1]
 
             if (container.isEmpty()) return false
+            if (container[0].type == Material.AIR)return false
 
             //まとめて取引する場合
             if (stack) {
@@ -205,13 +224,13 @@ class UserShop {
                 //オーナーにお金を送金
                 addProfit(data.ownerUUId, price)
 
+                p.inventory.addItem(item.clone())
+
                 container.remove(item)
 
                 data.container = container
 
                 set(id, data)
-
-                p.inventory.addItem(item)
 
                 database.logNormal(p, "BuyItem x ${item.amount} ID:$id", price)
                 return true
@@ -224,17 +243,23 @@ class UserShop {
 
             addProfit(p.uniqueId, data.price)
 
+            val pItem = item.clone()
+
+            pItem.amount = 1
+
             item.amount--
 
-            container[0] = item
+            if (item.amount == 0){
+                container.removeAt(container.size-1)
+            }else{
+                container[container.size-1] = item
+            }
 
             data.container = container
 
             set(id, data)
 
-            item.amount = 1
-
-            p.inventory.addItem(item)
+            p.inventory.addItem(pItem)
 
             database.logNormal(p, "BuyItem x 1 ID:$id", data.price)
 
@@ -246,11 +271,9 @@ class UserShop {
 
         val inv = p.inventory
 
-        val sellItem = data.container[1]
+        val sellItem = data.container[0]
 
         if (sellItem.type == Material.AIR)return false
-
-        sellItem.amount = 1
 
         //スタックで買い取ってもらう
         if (stack){
@@ -259,10 +282,7 @@ class UserShop {
 
                 if (item == null)continue
 
-                val checkItem = item.clone()
-                checkItem.amount = 1
-
-                if (checkItem != sellItem)continue
+                if (!equeal(item,sellItem))continue
 
                 val price = item.amount * data.price
 
@@ -282,6 +302,8 @@ class UserShop {
                 return true
             }
 
+            return false
+
         }
 
         //一つのアイテム
@@ -289,21 +311,21 @@ class UserShop {
 
             if (item == null)continue
 
-            val checkItem = item.clone()
-            checkItem.amount = 1
+            if (!equeal(item,sellItem))continue
 
-            if (checkItem != sellItem)continue
+            val pItem = item.clone()
+            pItem.amount = 1
 
-            val price = item.amount * data.price
+            val price = data.price
 
             if (vault.getBalance(data.ownerUUId) < price)return false
 
             //ショップオーナーからお金を引き出す
             vault.withdraw(data.ownerUUId,price)
 
-            p.inventory.removeItem(checkItem)
+            p.inventory.removeItem(pItem)
 
-            data.container.add(checkItem)
+            data.container.add(pItem)
 
             addProfit(p.uniqueId,price)
 
@@ -316,6 +338,23 @@ class UserShop {
     }
 
     /**
+     * ２つのItemStackが同じものかを識別する
+     */
+    fun equeal(itemA:ItemStack,itemB:ItemStack):Boolean{
+
+        val anItemA = itemA.clone()
+        anItemA.amount = 1
+
+        val anItemB = itemB.clone()
+        anItemB.amount = 1
+
+        if (anItemA.toString() == anItemB.toString())return true
+
+        return false
+
+    }
+
+    /**
      * コンテナを開く
      */
     fun openContainer(p:Player,id: Int){
@@ -325,7 +364,8 @@ class UserShop {
         val inv = Bukkit.createInventory(null,54,CONTAINER_NAME+id)
 
         for (item in data.container){
-            inv.addItem(item)
+            if (item.type == Material.AIR)continue
+            inv.addItem(item.clone())
         }
 
         p.openInventory(inv)

@@ -53,6 +53,8 @@ class Man10Shop : JavaPlugin() {
 
         saveDefaultConfig()
 
+        pl = this
+
         pluginEnable = config.getBoolean("pluginEnabled",true)
 
         database = Database()
@@ -60,7 +62,6 @@ class Man10Shop : JavaPlugin() {
         userShop = UserShop()
 
         database.mysqlQueue()
-        pl = this
 
         vault = VaultManager(this)
 
