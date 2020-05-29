@@ -39,13 +39,17 @@ class ShopEvent : Listener,CommandExecutor{
 
         if (!NumberUtils.isNumber(lines[1]))return
 
+        val price = lines[1].toDouble()
+
+        if (price <0)return
+
         val isBuy = lines[0].replace("shop","") == "b"
 
-        userShop.create(p,e.block.location,lines[1].toDouble(),isBuy)
+        userShop.create(p,e.block.location,price,isBuy)
 
         e.setLine(0, USERSHOP)
         e.setLine(1,"§b§l${p.name}")
-        e.setLine(2,"${if (isBuy) "§d§lB" else "§b§lS"}§e§l${lines[1]}")
+        e.setLine(2,"${if (isBuy) "§d§lB" else "§b§lS"}§e§l${price}")
         e.setLine(3,lines[2].replace("&","§"))
 
     }

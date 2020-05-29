@@ -46,6 +46,8 @@ class Man10Shop : JavaPlugin(){
 
         val USERSHOP = "§a§lUSER SHOP"
 
+        var maxPrice = 10.0
+
         var pluginEnable = true
 
         fun sendMsg(p:Player,msg:String){
@@ -62,6 +64,7 @@ class Man10Shop : JavaPlugin(){
         pl = this
 
         pluginEnable = config.getBoolean("pluginEnabled",true)
+        maxPrice = config.getDouble("maxPrice",100000000.0)
 
         database = Database()
         merchantShop = MerchantShop()
