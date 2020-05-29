@@ -242,7 +242,7 @@ class UserShop {
 
             vault.withdraw(p.uniqueId, data.price)
 
-            addProfit(p.uniqueId, data.price)
+            addProfit(data.ownerUUId, data.price)
 
             val pItem = item.clone()
 
