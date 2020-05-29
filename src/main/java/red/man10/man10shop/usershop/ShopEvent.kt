@@ -14,8 +14,10 @@ import org.bukkit.event.block.SignChangeEvent
 import org.bukkit.event.inventory.InventoryCloseEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import red.man10.man10shop.Man10Shop.Companion.CREATE
+import red.man10.man10shop.Man10Shop.Companion.OP
 import red.man10.man10shop.Man10Shop.Companion.USER
 import red.man10.man10shop.Man10Shop.Companion.USERSHOP
+import red.man10.man10shop.Man10Shop.Companion.maxPrice
 import red.man10.man10shop.Man10Shop.Companion.pluginEnable
 import red.man10.man10shop.Man10Shop.Companion.sendMsg
 import red.man10.man10shop.Man10Shop.Companion.userShop
@@ -42,6 +44,8 @@ class ShopEvent : Listener,CommandExecutor{
         val price = lines[1].toDouble()
 
         if (price <0)return
+
+        if (price> maxPrice)return
 
         val isBuy = lines[0].replace("shop","") == "b"
 
@@ -75,9 +79,9 @@ class ShopEvent : Listener,CommandExecutor{
         if (e.action == Action.RIGHT_CLICK_BLOCK){
 
             if (userShop.tradeItem(shop.first,p, p.isSneaking)){
-                p.sendMessage("§a§l取引成功！")
+                sendMsg(p,"§a§l取引成功！")
             }else{
-                p.sendMessage("§c§l取引失敗、所持金が足りない可能性があります")
+                sendMsg(p,"§c§l取引失敗、所持金が足りない可能性があります")
             }
 
             return
@@ -106,13 +110,22 @@ class ShopEvent : Listener,CommandExecutor{
 
         val pair = userShop.getShop(sign.location,p.server.name) ?: return
 
-        if (p.uniqueId != pair.second.ownerUUId)return
+        if (p.uniqueId != pair.second.ownerUUId &&!p.hasPermission(OP)){
+            e.isCancelled = true
+            return
+        }
 
         if (!p.isSneaking)return
 
+        if (userShop.get(pair.first).container.isNotEmpty()){
+            sendMsg(p,"§c§lショップの中にアイテムが入っているので破壊できません！")
+            e.isCancelled = true
+            return
+        }
+
         userShop.deleteShop(pair.first,p)
 
-        p.sendMessage("§a§lショップを削除しました！")
+        sendMsg(p,"§a§lショップを削除しました！")
 
     }
 
