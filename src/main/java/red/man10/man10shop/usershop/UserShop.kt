@@ -10,6 +10,7 @@ import red.man10.man10shop.Man10Shop
 import red.man10.man10shop.Man10Shop.Companion.database
 import red.man10.man10shop.Man10Shop.Companion.mysqlQueue
 import red.man10.man10shop.Man10Shop.Companion.pl
+import red.man10.man10shop.Man10Shop.Companion.sendMsg
 import red.man10.man10shop.Man10Shop.Companion.vault
 import red.man10.man10shop.MySQLManager
 import java.util.*
@@ -75,7 +76,7 @@ class UserShop {
     @Synchronized
     fun create(p: Player,location: Location,price:Double,isBuy:Boolean){
 
-        p.sendMessage("§e§lショップを作成中....")
+        sendMsg(p,"§e§l新規ショップを作成中")
 
         val data = UserShopData()
 
@@ -119,7 +120,7 @@ class UserShop {
 
             database.logNormal(p,"CreateNewShop (${if (isBuy) "buy" else "sell"})",price)
 
-            p.sendMessage("§a§l作成完了！")
+            sendMsg(p,"§a§l作成完了")
 
         }).start()
 
@@ -386,12 +387,36 @@ class UserShop {
         val p = Bukkit.getOfflinePlayer(uuid)
 
         if (p.isOnline){
-            p.player!!.sendMessage("§a[Man10Shop]§r§e§l入金情報 : $$amount")
+            sendMsg(p.player!!,"§e§l入金情報 : $$amount")
         }
 
         mysqlQueue.add("INSERT INTO user_index (uuid, player, profit) " +
                 "VALUES ('$uuid', '${p.name}', '$amount');")
 
+    }
+
+    /**
+     * 利益の確認
+     */
+    fun getProfit(p:Player):Double{
+        val mysql = MySQLManager(pl,"mreGetProfit")
+        var profit = 0.0
+        val rs = mysql.query("SELECT `profit` FROM `user_index` " +
+                "WHERE `uuid`='${p.uniqueId}' AND `received`='0';")?:return 0.0
+
+        while (rs.next()){
+            profit += rs.getDouble("profit")
+        }
+        return profit
+    }
+
+    /**
+     * 利益の取り出し
+     */
+    fun takeProfit(p:Player){
+        vault.deposit(p.uniqueId,getProfit(p))
+
+        mysqlQueue.add("UPDATE `user_index` SET `received`='1' WHERE `uuid`='${p.uniqueId}';")
     }
 
     class UserShopData{

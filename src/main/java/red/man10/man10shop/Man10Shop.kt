@@ -4,6 +4,7 @@ import org.bukkit.Bukkit
 import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
+import org.bukkit.event.Listener
 import org.bukkit.plugin.java.JavaPlugin
 import red.man10.man10shop.merchant.Commands
 import red.man10.man10shop.merchant.MerchantShop
@@ -13,7 +14,7 @@ import red.man10.man10shop.usershop.UserShop
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.LinkedBlockingQueue
 
-class Man10Shop : JavaPlugin() {
+class Man10Shop : JavaPlugin(){
 
     companion object{
 
@@ -46,6 +47,11 @@ class Man10Shop : JavaPlugin() {
         val USERSHOP = "§a§lUSER SHOP"
 
         var pluginEnable = true
+
+        fun sendMsg(p:Player,msg:String){
+            p.sendMessage("§e[Man10Shop]§r$msg")
+        }
+
     }
 
     override fun onEnable() {
@@ -72,6 +78,7 @@ class Man10Shop : JavaPlugin() {
         server.pluginManager.registerEvents(ShopEvent(),this)
         server.pluginManager.registerEvents(red.man10.man10shop.usershop.ShopEvent(),this)
         getCommand("createshop")!!.setExecutor(Commands())
+        getCommand("shopbal")!!.setExecutor(red.man10.man10shop.usershop.ShopEvent())
 
     }
 
@@ -110,14 +117,18 @@ class Man10Shop : JavaPlugin() {
 
         if (cmd == "off"){
             config.set("pluginEnabled",false)
+            sender.sendMessage("ショップをOFFにしました")
             pluginEnable = false
         }
 
         if (cmd == "on"){
             config.set("pluginEnabled",true)
+            sender.sendMessage("ショップをONにしました")
             pluginEnable = true
         }
 
         return false
     }
+
+
 }

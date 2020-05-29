@@ -2,6 +2,9 @@ package red.man10.man10shop.usershop
 
 import org.apache.commons.lang.math.NumberUtils
 import org.bukkit.block.Sign
+import org.bukkit.command.Command
+import org.bukkit.command.CommandExecutor
+import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
@@ -14,9 +17,10 @@ import red.man10.man10shop.Man10Shop.Companion.CREATE
 import red.man10.man10shop.Man10Shop.Companion.USER
 import red.man10.man10shop.Man10Shop.Companion.USERSHOP
 import red.man10.man10shop.Man10Shop.Companion.pluginEnable
+import red.man10.man10shop.Man10Shop.Companion.sendMsg
 import red.man10.man10shop.Man10Shop.Companion.userShop
 
-class ShopEvent : Listener{
+class ShopEvent : Listener,CommandExecutor{
 
 
     //ショップ看板の設置、看板内容の書き換え
@@ -69,7 +73,7 @@ class ShopEvent : Listener{
             if (userShop.tradeItem(shop.first,p, p.isSneaking)){
                 p.sendMessage("§a§l取引成功！")
             }else{
-                p.sendMessage("§3§l取引失敗、所持金が足りない可能性があります")
+                p.sendMessage("§c§l取引失敗、所持金が足りない可能性があります")
             }
 
             return
@@ -122,6 +126,22 @@ class ShopEvent : Listener{
             userShop.updateShop(id,p,e.inventory)
 
         }
+    }
+
+    override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
+
+        if (sender !is Player)return false
+        if (!sender.hasPermission(CREATE))return false
+
+        if (label != "shopbal")return false
+
+        userShop.takeProfit(sender)
+
+        sendMsg(sender,"§a§l利益を取り出しました")
+        sendMsg(sender,"§b§lショップの利益:$${userShop.getProfit(sender)}")
+
+
+        return false
     }
 
 }
