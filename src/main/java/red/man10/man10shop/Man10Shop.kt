@@ -53,6 +53,8 @@ class Man10Shop : JavaPlugin(){
 
         var pluginEnable = true
 
+        var cost = 10000.0
+
         var enableWorld = mutableListOf<String>()
 
         var breakMode = HashMap<Player,Boolean>()
@@ -73,6 +75,7 @@ class Man10Shop : JavaPlugin(){
         pluginEnable = config.getBoolean("pluginEnabled",true)
         maxPrice = config.getDouble("maxPrice",100000000.0)
         enableWorld = config.getStringList("enableWorld")
+        cost = config.getDouble("cost",10000.0)
 
         database = Database()
         merchantShop = MerchantShop()
@@ -175,6 +178,23 @@ class Man10Shop : JavaPlugin(){
             }
 
             breakMode[sender] = !breakMode[sender]!!
+        }
+
+        if (cmd == "reloadconfig"){
+
+            Thread(Runnable {
+
+                reloadConfig()
+
+                pluginEnable = config.getBoolean("pluginEnabled",true)
+                maxPrice = config.getDouble("maxPrice",100000000.0)
+                enableWorld = config.getStringList("enableWorld")
+                cost = config.getDouble("cost",10000.0)
+
+                sendMsg(sender,"コンフィグのリロード完了！")
+
+            }).start()
+
         }
 
         return false

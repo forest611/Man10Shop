@@ -1,6 +1,7 @@
 package red.man10.man10shop.usershop
 
 import org.apache.commons.lang.math.NumberUtils
+import org.bukkit.Bukkit
 import org.bukkit.block.Sign
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
@@ -18,12 +19,15 @@ import red.man10.man10shop.Man10Shop.Companion.OP
 import red.man10.man10shop.Man10Shop.Companion.USER
 import red.man10.man10shop.Man10Shop.Companion.USERSHOP
 import red.man10.man10shop.Man10Shop.Companion.breakMode
+import red.man10.man10shop.Man10Shop.Companion.cost
 import red.man10.man10shop.Man10Shop.Companion.enableWorld
 import red.man10.man10shop.Man10Shop.Companion.maxPrice
 import red.man10.man10shop.Man10Shop.Companion.pluginEnable
 import red.man10.man10shop.Man10Shop.Companion.sendMsg
 import red.man10.man10shop.Man10Shop.Companion.sendOP
 import red.man10.man10shop.Man10Shop.Companion.userShop
+import red.man10.man10shop.Man10Shop.Companion.vault
+import kotlin.math.cos
 
 class ShopEvent : Listener{
 
@@ -44,6 +48,20 @@ class ShopEvent : Listener{
 
         val lines = e.lines.clone()
 
+        val id = userShop.getShop(e.block.location,p.server.name)
+
+
+        //////同じ場所にショップがあったら復元
+        if (id!=null){
+            e.setLine(0, USERSHOP)
+            e.setLine(1,"§b§l${Bukkit.getOfflinePlayer(id.second.ownerUUId).name}")
+            e.setLine(2,"${if (id.second.isBuy) "§d§lB" else "§b§lS"}§e§l${id.second.price}")
+
+            sendMsg(p,"§a§lショップが復元されました！")
+            return
+
+        }
+
         if (lines[0].indexOf("shop") != 0)return
 
         if (!NumberUtils.isNumber(lines[1]))return
@@ -56,10 +74,16 @@ class ShopEvent : Listener{
 
         val isBuy = lines[0].replace("shop","") == "b"
 
-
-        if (userShop.getShop(e.block.location,p.server.name) ==null){
-            userShop.create(p,e.block.location,price,isBuy)
+        //////////ショップ代を支払う
+        if (vault.getBalance(p.uniqueId) < cost){
+            sendMsg(p,"§c§lショップを作る費用が足りません！")
+            return
         }
+
+        vault.withdraw(p.uniqueId, cost)
+
+        userShop.create(p,e.block.location,price,isBuy)
+        sendMsg(p,"§a§l新規ショップを作成しました！")
 
         e.setLine(0, USERSHOP)
         e.setLine(1,"§b§l${p.name}")
