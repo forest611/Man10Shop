@@ -277,6 +277,11 @@ class UserShop {
 
         ///////////買取/////////////////
 
+        if (data.container.size >=54&&data.container[53].amount >= data.container[53].maxStackSize){
+            sendMsg(p,"§c§lショップのコンテナが満タンの可能性があります")
+            return false
+        }
+
         val inv = p.inventory
 
         val sellItem = data.container[0]

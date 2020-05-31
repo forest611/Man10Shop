@@ -17,10 +17,12 @@ import red.man10.man10shop.Man10Shop.Companion.CREATE
 import red.man10.man10shop.Man10Shop.Companion.OP
 import red.man10.man10shop.Man10Shop.Companion.USER
 import red.man10.man10shop.Man10Shop.Companion.USERSHOP
+import red.man10.man10shop.Man10Shop.Companion.breakMode
 import red.man10.man10shop.Man10Shop.Companion.enableWorld
 import red.man10.man10shop.Man10Shop.Companion.maxPrice
 import red.man10.man10shop.Man10Shop.Companion.pluginEnable
 import red.man10.man10shop.Man10Shop.Companion.sendMsg
+import red.man10.man10shop.Man10Shop.Companion.sendOP
 import red.man10.man10shop.Man10Shop.Companion.userShop
 
 class ShopEvent : Listener{
@@ -54,7 +56,10 @@ class ShopEvent : Listener{
 
         val isBuy = lines[0].replace("shop","") == "b"
 
-        userShop.create(p,e.block.location,price,isBuy)
+
+        if (userShop.getShop(e.block.location,p.server.name) ==null){
+            userShop.create(p,e.block.location,price,isBuy)
+        }
 
         e.setLine(0, USERSHOP)
         e.setLine(1,"§b§l${p.name}")
@@ -82,30 +87,39 @@ class ShopEvent : Listener{
 
         val shop = userShop.getShop(sign.location,p.server.name)?:return
 
-        if (shop.second.ownerUUId == p.uniqueId){
-            sendMsg(p,"§c§lこれは自分のショップです！")
-            return
-        }
-
-        if (!checkMap.contains(Pair(p,shop.first))){
-
-            val item = shop.second.container[shop.second.container.size-1]
-
-            val name = if (!item.hasItemMeta()) item.i18NDisplayName!! else item.itemMeta.displayName
-
-            val lore = if (item.hasItemMeta()&& item.itemMeta.lore != null) item.itemMeta.lore!![0] else ""
-
-            sendMsg(p,"§e§lXXXX§r${if (shop.second.isBuy) "§d§l購入確認" else "§b§l売却確認"}§e§lXXXX")
-            sendMsg(p,name)
-            sendMsg(p,lore)
-
-            checkMap.add(Pair(p,shop.first))
-        }
-
-        checkMap.remove(Pair(p,shop.first))
 
         //取引する
         if (e.action == Action.RIGHT_CLICK_BLOCK){
+
+            //自分のショップだった場合リターン
+            if (shop.second.ownerUUId == p.uniqueId){
+                sendMsg(p,"§c§lこれは自分のショップです！")
+                return
+            }
+
+            //ショップの確認
+            if (!checkMap.contains(Pair(p,shop.first))){
+
+                if (shop.second.container.isEmpty()){
+                    sendMsg(p,"§c§lショップの在庫、もしくは買取アイテムの設定がされていないようです")
+                    return
+                }
+
+                val item = shop.second.container[shop.second.container.size-1]
+
+                val name = if (!item.hasItemMeta()) item.i18NDisplayName!! else item.itemMeta.displayName
+
+                val lore = if (item.hasItemMeta()&& item.itemMeta.lore != null) item.itemMeta.lore!![0] else "説明無し"
+
+                sendMsg(p,"§e§k§lXXXX§r${if (shop.second.isBuy) "§d§l購入確認" else "§b§l売却確認"}§e§k§lXXXX")
+                sendMsg(p,name)
+                sendMsg(p,lore)
+
+                checkMap.add(Pair(p,shop.first))
+                return
+            }
+
+            checkMap.remove(Pair(p,shop.first))
 
             if (userShop.tradeItem(shop.first,p, p.isSneaking)){
                 sendMsg(p,"§a§l取引成功！")
@@ -148,9 +162,20 @@ class ShopEvent : Listener{
             return
         }
 
-        if (!p.isSneaking)return
+        if (!p.isSneaking){
+            e.isCancelled = true
+            return
+        }
 
         if (userShop.get(pair.first).container.isNotEmpty()){
+            if (p.hasPermission(OP) && breakMode[p] != null && breakMode[p]!!){
+
+                userShop.deleteShop(pair.first,p)
+
+                sendOP("§a${p.name}がユーザーのショップを強制削除しました")
+                return
+            }
+
             sendMsg(p,"§c§lショップの中にアイテムが入っているので破壊できません！")
             e.isCancelled = true
             return

@@ -55,6 +55,8 @@ class Man10Shop : JavaPlugin(){
 
         var enableWorld = mutableListOf<String>()
 
+        var breakMode = HashMap<Player,Boolean>()
+
         fun sendMsg(p:Player,msg:String){
             p.sendMessage("§e[Man10Shop]§r$msg")
         }
@@ -105,6 +107,13 @@ class Man10Shop : JavaPlugin(){
         if (sender !is Player)return false
 
         if (args[0].isEmpty()){
+
+            sendMsg(sender,"/man10shop on : プラグインをonにする")
+            sendMsg(sender,"/man10shop off : プラグインをoffにする")
+            sendMsg(sender,"/man10shop enable add <world> : 指定ワールドでショップの利用を許可する")
+            sendMsg(sender,"/man10shop enable remove <world> : 指定ワールドでショップの利用を許可を外す")
+            sendMsg(sender,"/man10shop breakmode : ユーザーショップの破壊モードのON/OFF")
+
             return true
         }
 
@@ -143,6 +152,7 @@ class Man10Shop : JavaPlugin(){
 
                 enableWorld.add(args[2])
                 config.set("enableWorld", enableWorld)
+                saveConfig()
                 sendMsg(sender,"追加完了！")
 
             }
@@ -150,10 +160,21 @@ class Man10Shop : JavaPlugin(){
             if (args[1] == "remove"){
                 enableWorld.remove(args[2])
                 config.set("enableWorld", enableWorld)
+                saveConfig()
                 sendMsg(sender,"削除完了！")
 
             }
 
+        }
+
+        if (cmd == "breakmode"){
+
+            if (breakMode[sender] == null){
+                breakMode[sender] = true
+                return true
+            }
+
+            breakMode[sender] = !breakMode[sender]!!
         }
 
         return false
