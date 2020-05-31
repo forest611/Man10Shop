@@ -17,12 +17,15 @@ import red.man10.man10shop.Man10Shop.Companion.CREATE
 import red.man10.man10shop.Man10Shop.Companion.OP
 import red.man10.man10shop.Man10Shop.Companion.USER
 import red.man10.man10shop.Man10Shop.Companion.USERSHOP
+import red.man10.man10shop.Man10Shop.Companion.enableWorld
 import red.man10.man10shop.Man10Shop.Companion.maxPrice
 import red.man10.man10shop.Man10Shop.Companion.pluginEnable
 import red.man10.man10shop.Man10Shop.Companion.sendMsg
 import red.man10.man10shop.Man10Shop.Companion.userShop
 
-class ShopEvent : Listener,CommandExecutor{
+class ShopEvent : Listener{
+
+    val checkMap = mutableListOf<Pair<Player,Int>>()
 
 
     //ショップ看板の設置、看板内容の書き換え
@@ -32,6 +35,8 @@ class ShopEvent : Listener,CommandExecutor{
         if (!pluginEnable)return
 
         val p = e.player
+
+        if (!enableWorld.contains(p.world.name))return
 
         if (!p.hasPermission(CREATE))return
 
@@ -65,6 +70,8 @@ class ShopEvent : Listener,CommandExecutor{
 
         val p = e.player
 
+        if (!enableWorld.contains(p.world.name))return
+
         if (!p.hasPermission(USER))return
 
         if (e.action != Action.RIGHT_CLICK_BLOCK && e.action != Action.LEFT_CLICK_BLOCK)return
@@ -75,13 +82,35 @@ class ShopEvent : Listener,CommandExecutor{
 
         val shop = userShop.getShop(sign.location,p.server.name)?:return
 
+        if (shop.second.ownerUUId == p.uniqueId){
+            sendMsg(p,"§c§lこれは自分のショップです！")
+            return
+        }
+
+        if (!checkMap.contains(Pair(p,shop.first))){
+
+            val item = shop.second.container[shop.second.container.size-1]
+
+            val name = if (!item.hasItemMeta()) item.i18NDisplayName!! else item.itemMeta.displayName
+
+            val lore = if (item.hasItemMeta()&& item.itemMeta.lore != null) item.itemMeta.lore!![0] else ""
+
+            sendMsg(p,"§e§lXXXX§r${if (shop.second.isBuy) "§d§l購入確認" else "§b§l売却確認"}§e§lXXXX")
+            sendMsg(p,name)
+            sendMsg(p,lore)
+
+            checkMap.add(Pair(p,shop.first))
+        }
+
+        checkMap.remove(Pair(p,shop.first))
+
         //取引する
         if (e.action == Action.RIGHT_CLICK_BLOCK){
 
             if (userShop.tradeItem(shop.first,p, p.isSneaking)){
                 sendMsg(p,"§a§l取引成功！")
             }else{
-                sendMsg(p,"§c§l取引失敗、所持金が足りない可能性があります")
+                sendMsg(p,"§c§l取引失敗！")
             }
 
             return
@@ -106,7 +135,11 @@ class ShopEvent : Listener,CommandExecutor{
 
         val p = e.player
 
-        val sign = e.block
+        if (!enableWorld.contains(p.world.name))return
+
+        val sign = e.block.state
+
+        if (sign !is Sign)return
 
         val pair = userShop.getShop(sign.location,p.server.name) ?: return
 
@@ -145,20 +178,5 @@ class ShopEvent : Listener,CommandExecutor{
         }
     }
 
-    override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
-
-        if (sender !is Player)return false
-        if (!sender.hasPermission(CREATE))return false
-
-        if (label != "shopbal")return false
-
-        userShop.takeProfit(sender)
-
-        sendMsg(sender,"§a§l利益を取り出しました")
-        sendMsg(sender,"§b§lショップの利益:$${userShop.getProfit(sender)}")
-
-
-        return false
-    }
 
 }

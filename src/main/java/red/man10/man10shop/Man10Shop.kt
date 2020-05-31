@@ -6,6 +6,7 @@ import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 import org.bukkit.event.Listener
 import org.bukkit.plugin.java.JavaPlugin
+import red.man10.man10offlinebank.BankAPI
 import red.man10.man10shop.merchant.Commands
 import red.man10.man10shop.merchant.MerchantShop
 import red.man10.man10shop.merchant.MerchantShop.MerchantShopData
@@ -31,6 +32,8 @@ class Man10Shop : JavaPlugin(){
 
         lateinit var pl : Man10Shop
 
+        lateinit var bank : BankAPI
+
         //OPにのみメッセージを送る
         fun sendOP(message:String){
             for (p in Bukkit.getOnlinePlayers()){
@@ -50,6 +53,8 @@ class Man10Shop : JavaPlugin(){
 
         var pluginEnable = true
 
+        var enableWorld = mutableListOf<String>()
+
         fun sendMsg(p:Player,msg:String){
             p.sendMessage("§e[Man10Shop]§r$msg")
         }
@@ -65,12 +70,15 @@ class Man10Shop : JavaPlugin(){
 
         pluginEnable = config.getBoolean("pluginEnabled",true)
         maxPrice = config.getDouble("maxPrice",100000000.0)
+        enableWorld = config.getStringList("enableWorld")
 
         database = Database()
         merchantShop = MerchantShop()
         userShop = UserShop()
 
         database.mysqlQueue()
+
+        bank = BankAPI(this)
 
         vault = VaultManager(this)
 
@@ -81,7 +89,6 @@ class Man10Shop : JavaPlugin(){
         server.pluginManager.registerEvents(ShopEvent(),this)
         server.pluginManager.registerEvents(red.man10.man10shop.usershop.ShopEvent(),this)
         getCommand("createshop")!!.setExecutor(Commands())
-        getCommand("shopbal")!!.setExecutor(red.man10.man10shop.usershop.ShopEvent())
 
     }
 
@@ -128,6 +135,25 @@ class Man10Shop : JavaPlugin(){
             config.set("pluginEnabled",true)
             sender.sendMessage("ショップをONにしました")
             pluginEnable = true
+        }
+
+        if (cmd == "enable" && args.size == 3){
+
+            if (args[1] == "add"){
+
+                enableWorld.add(args[2])
+                config.set("enableWorld", enableWorld)
+                sendMsg(sender,"追加完了！")
+
+            }
+
+            if (args[1] == "remove"){
+                enableWorld.remove(args[2])
+                config.set("enableWorld", enableWorld)
+                sendMsg(sender,"削除完了！")
+
+            }
+
         }
 
         return false

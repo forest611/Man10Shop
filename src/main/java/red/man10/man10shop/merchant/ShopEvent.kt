@@ -10,6 +10,8 @@ import org.bukkit.event.block.SignChangeEvent
 import org.bukkit.event.inventory.InventoryCloseEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import red.man10.man10shop.Man10Shop
+import red.man10.man10shop.Man10Shop.Companion.OP
+import red.man10.man10shop.Man10Shop.Companion.USER
 import red.man10.man10shop.Man10Shop.Companion.database
 import red.man10.man10shop.Man10Shop.Companion.merchantShop
 import red.man10.man10shop.Man10Shop.Companion.merchantShops
@@ -25,7 +27,7 @@ class ShopEvent:Listener {
 
         val p = e.player
 
-        if (!p.hasPermission("man10shop.op"))return
+        if (!p.hasPermission(OP))return
 
         if (e.lines.isEmpty())return
 
@@ -70,7 +72,7 @@ class ShopEvent:Listener {
 
         val p = e.player
 
-        if (!p.hasPermission("man10shop.use"))return
+        if (!p.hasPermission(USER))return
 
         if (e.action != Action.RIGHT_CLICK_BLOCK)return
 
@@ -128,7 +130,7 @@ class ShopEvent:Listener {
 
         if (id == -1)return
 
-        if (!p.hasPermission("man10shop.op")){
+        if (!p.hasPermission(OP)){
             e.isCancelled = true
             return
         }
@@ -148,7 +150,7 @@ class ShopEvent:Listener {
         val p = e.player as Player
 
         if (e.view.title != "§e§lMan10ShopOp")return
-        if (!p.hasPermission("man10shop.op"))return
+        if (!p.hasPermission(OP))return
 
         merchantShop.createShop(e.inventory,p)
 

@@ -7,6 +7,7 @@ import org.bukkit.entity.Player
 import org.bukkit.inventory.Inventory
 import org.bukkit.inventory.ItemStack
 import red.man10.man10shop.Man10Shop
+import red.man10.man10shop.Man10Shop.Companion.bank
 import red.man10.man10shop.Man10Shop.Companion.database
 import red.man10.man10shop.Man10Shop.Companion.mysqlQueue
 import red.man10.man10shop.Man10Shop.Companion.pl
@@ -218,12 +219,15 @@ class UserShop {
 
                 val price = data.price * item.amount
 
-                if (vault.getBalance(p.uniqueId) < price) return false
+                if (vault.getBalance(p.uniqueId) < price) {
+                    sendMsg(p,"§cお金が足りません！")
+                    return false
+                }
 
                 vault.withdraw(p.uniqueId, price)
 
                 //オーナーにお金を送金
-                addProfit(data.ownerUUId, price)
+                bank.deposit(data.ownerUUId,price, "ShopProfit")
 
                 p.inventory.addItem(item.clone())
 
@@ -238,11 +242,14 @@ class UserShop {
             }
 
             //一つだけの場合
-            if (vault.getBalance(p.uniqueId) < data.price) return false
+            if (vault.getBalance(p.uniqueId) < data.price){
+                sendMsg(p,"§cお金が足りません！")
+                return false
+            }
 
             vault.withdraw(p.uniqueId, data.price)
 
-            addProfit(data.ownerUUId, data.price)
+            bank.deposit(data.ownerUUId,data.price, "ShopProfit")
 
             val pItem = item.clone()
 
@@ -287,16 +294,17 @@ class UserShop {
 
                 val price = item.amount * data.price
 
-                if (vault.getBalance(data.ownerUUId) < price)return false
-
                 //ショップオーナーからお金を引き出す
-                vault.withdraw(data.ownerUUId,price)
+                if (!bank.withdraw(data.ownerUUId,price,"ShopPurchase")){
+                    sendMsg(p,"§cショップのオーナーがお金を持っていないようです！")
+                    return false
+                }
 
                 p.inventory.removeItem(item)
 
                 data.container.add(item)
 
-                addProfit(p.uniqueId,price)
+                bank.deposit(p.uniqueId,price,"ShopProfit")
 
                 database.logNormal(p, "SellItem x ${item.amount} ID:$id", price)
 
@@ -319,16 +327,17 @@ class UserShop {
 
             val price = data.price
 
-            if (vault.getBalance(data.ownerUUId) < price)return false
-
             //ショップオーナーからお金を引き出す
-            vault.withdraw(data.ownerUUId,price)
+            if (!bank.withdraw(data.ownerUUId,price,"ShopPurchase")){
+                sendMsg(p,"§cショップのオーナーがお金を持っていないようです！")
+                return false
+            }
 
             p.inventory.removeItem(pItem)
 
             data.container.add(pItem)
 
-            addProfit(p.uniqueId,price)
+            bank.deposit(p.uniqueId,price,"ShopProfit")
 
             database.logNormal(p, "SellItem x ${item.amount} ID:$id", price)
 
@@ -382,42 +391,6 @@ class UserShop {
         userShop[id] = data
     }
 
-    fun addProfit(uuid:UUID,amount: Double){
-
-        val p = Bukkit.getOfflinePlayer(uuid)
-
-        if (p.isOnline){
-            sendMsg(p.player!!,"§e§l入金情報 : $$amount")
-        }
-
-        mysqlQueue.add("INSERT INTO user_index (uuid, player, profit) " +
-                "VALUES ('$uuid', '${p.name}', '$amount');")
-
-    }
-
-    /**
-     * 利益の確認
-     */
-    fun getProfit(p:Player):Double{
-        val mysql = MySQLManager(pl,"mreGetProfit")
-        var profit = 0.0
-        val rs = mysql.query("SELECT `profit` FROM `user_index` " +
-                "WHERE `uuid`='${p.uniqueId}' AND `received`='0';")?:return 0.0
-
-        while (rs.next()){
-            profit += rs.getDouble("profit")
-        }
-        return profit
-    }
-
-    /**
-     * 利益の取り出し
-     */
-    fun takeProfit(p:Player){
-        vault.deposit(p.uniqueId,getProfit(p))
-
-        mysqlQueue.add("UPDATE `user_index` SET `received`='1' WHERE `uuid`='${p.uniqueId}';")
-    }
 
     class UserShopData{
 

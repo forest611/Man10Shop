@@ -3,6 +3,7 @@ version: 1.0
 softdepend:
   - Man10CommonLibs
   - Vault
+  - Man10OfflineBank
 main: red.man10.man10shop.Man10Shop
 auther: [forest611]
 api-version: 1.13
