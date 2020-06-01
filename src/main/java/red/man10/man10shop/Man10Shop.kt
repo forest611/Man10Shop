@@ -93,6 +93,7 @@ class Man10Shop : JavaPlugin(){
 
         server.pluginManager.registerEvents(ShopEvent(),this)
         server.pluginManager.registerEvents(red.man10.man10shop.usershop.ShopEvent(),this)
+        getCommand("man10shop")!!.setExecutor(this)
         getCommand("createshop")!!.setExecutor(Commands())
 
     }
@@ -109,7 +110,7 @@ class Man10Shop : JavaPlugin(){
 
         if (sender !is Player)return false
 
-        if (args[0].isEmpty()){
+        if (args.isEmpty()){
 
             sendMsg(sender,"/man10shop on : プラグインをonにする")
             sendMsg(sender,"/man10shop off : プラグインをoffにする")

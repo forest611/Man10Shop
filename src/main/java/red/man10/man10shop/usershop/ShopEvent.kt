@@ -32,6 +32,7 @@ import kotlin.math.cos
 class ShopEvent : Listener{
 
     val checkMap = mutableListOf<Pair<Player,Int>>()
+    val isEdit = mutableListOf<Int>()
 
 
     //ショップ看板の設置、看板内容の書き換え
@@ -121,13 +122,21 @@ class ShopEvent : Listener{
                 return
             }
 
+            //ショップが編集中だった場合
+            if (isEdit.contains(shop.first)){
+                sendMsg(p,"§c§l現在ショップの編集中です！")
+                return
+            }
+
+            //ショップが空だった場合
+            if (shop.second.container.isEmpty()){
+                sendMsg(p,"§c§lショップの在庫、もしくは買取アイテムの設定がされていないようです")
+                return
+            }
+
             //ショップの確認
             if (!checkMap.contains(Pair(p,shop.first))){
 
-                if (shop.second.container.isEmpty()){
-                    sendMsg(p,"§c§lショップの在庫、もしくは買取アイテムの設定がされていないようです")
-                    return
-                }
 
                 val item = shop.second.container[shop.second.container.size-1]
 
@@ -158,6 +167,8 @@ class ShopEvent : Listener{
         if (p.uniqueId == shop.second.ownerUUId && e.action == Action.LEFT_CLICK_BLOCK && !p.isSneaking){
 
             e.isCancelled = true
+
+            isEdit.add(shop.first)
 
             userShop.openContainer(p,shop.first)
 
@@ -223,6 +234,8 @@ class ShopEvent : Listener{
             val id = e.view.title.replace(userShop.CONTAINER_NAME,"").toInt()
 
             userShop.updateShop(id,p,e.inventory)
+
+            isEdit.remove(id)
 
         }
     }
