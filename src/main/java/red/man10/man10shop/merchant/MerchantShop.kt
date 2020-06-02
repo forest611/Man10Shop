@@ -11,6 +11,7 @@ import red.man10.man10shop.Man10Shop.Companion.database
 import red.man10.man10shop.Man10Shop.Companion.mysqlQueue
 import red.man10.man10shop.Man10Shop.Companion.pl
 import red.man10.man10shop.MySQLManager
+import java.lang.Exception
 
 class MerchantShop {
 
@@ -22,22 +23,28 @@ class MerchantShop {
 
         while (rs.next()){
 
-            val id = rs.getInt("id")
+            try {
+                val id = rs.getInt("id")
 
-            val data = MerchantShopData()
+                val data = MerchantShopData()
 
-            data.server = rs.getString("server")
-            data.world = rs.getString("world")
+                data.server = rs.getString("server")
+                data.world = rs.getString("world")
 
-            data.x = rs.getInt("locX")
-            data.y = rs.getInt("locY")
-            data.z = rs.getInt("locZ")
+                data.x = rs.getInt("locX")
+                data.y = rs.getInt("locY")
+                data.z = rs.getInt("locZ")
 
-            data.shop = Man10Shop.merchantShop.itemToMerchant(database.itemStackArrayFromBase64(rs.getString("shop_item")),id)
+                data.shop = Man10Shop.merchantShop.itemToMerchant(database.itemStackArrayFromBase64(rs.getString("shop_item")),id)
 
-            Man10Shop.merchantShops[id] = data
+                Man10Shop.merchantShops[id] = data
 
-            Bukkit.getLogger().info("Loaded merchant shop ID:$id")
+                Bukkit.getLogger().info("Loaded merchant shop ID:$id")
+
+            }catch (e:Exception){
+                Bukkit.getLogger().info("Unset shop place")
+            }
+
         }
 
         rs.close()
