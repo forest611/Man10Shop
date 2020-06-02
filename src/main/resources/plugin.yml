@@ -1,6 +1,6 @@
 name: Man10Shop
 version: 1.0
-softdepend:
+depend:
   - Man10CommonLibs
   - Vault
   - Man10OfflineBank

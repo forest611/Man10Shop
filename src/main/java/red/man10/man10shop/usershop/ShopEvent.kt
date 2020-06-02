@@ -53,7 +53,8 @@ class ShopEvent : Listener{
 
 
         //////同じ場所にショップがあったら復元
-        if (id!=null){
+        if (lines.isEmpty() && id!=null){
+
             e.setLine(0, USERSHOP)
             e.setLine(1,"§b§l${Bukkit.getOfflinePlayer(id.second.ownerUUId).name}")
             e.setLine(2,"${if (id.second.isBuy) "§d§lB" else "§b§lS"}§e§l${id.second.price}")
@@ -74,6 +75,21 @@ class ShopEvent : Listener{
         if (price> maxPrice)return
 
         val isBuy = lines[0].replace("shop","") == "b"
+
+        //////////////ショップをアップデート
+        if (id != null){
+
+            userShop.updateShop(id.first,p,price,isBuy)
+
+            sendMsg(p,"§a§lショップをアップデートしました！")
+
+            e.setLine(0, USERSHOP)
+            e.setLine(1,"§b§l${p.name}")
+            e.setLine(2,"${if (isBuy) "§d§lB" else "§b§lS"}§e§l${price}")
+            e.setLine(3,lines[2].replace("&","§"))
+
+            return
+        }
 
         //////////ショップ代を支払う
         if (vault.getBalance(p.uniqueId) < cost){
