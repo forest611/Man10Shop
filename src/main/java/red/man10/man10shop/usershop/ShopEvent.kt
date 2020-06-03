@@ -31,7 +31,7 @@ import kotlin.math.cos
 
 class ShopEvent : Listener{
 
-    val checkMap = mutableListOf<Pair<Player,Int>>()
+    val checkMap = HashMap<Player,Int>()
     val isEdit = mutableListOf<Int>()
 
 
@@ -151,7 +151,7 @@ class ShopEvent : Listener{
             }
 
             //ショップの確認
-            if (!checkMap.contains(Pair(p,shop.first))){
+            if (checkMap[p] ==null || checkMap[p] != shop.first){
 
 
                 val item = shop.second.container[shop.second.container.size-1]
@@ -164,11 +164,11 @@ class ShopEvent : Listener{
                 sendMsg(p,name)
                 sendMsg(p,lore)
 
-                checkMap.add(Pair(p,shop.first))
+                checkMap[p] = shop.first
                 return
             }
 
-            checkMap.remove(Pair(p,shop.first))
+            checkMap.remove(p)
 
             if (userShop.tradeItem(shop.first,p, p.isSneaking)){
                 sendMsg(p,"§a§l取引成功！")
@@ -180,7 +180,7 @@ class ShopEvent : Listener{
         }
 
         //コンテナの中身を見る
-        if (p.uniqueId == shop.second.ownerUUId && e.action == Action.LEFT_CLICK_BLOCK && !p.isSneaking){
+        if ((p.uniqueId == shop.second.ownerUUId || p.hasPermission(OP)) && e.action == Action.LEFT_CLICK_BLOCK && !p.isSneaking){
 
             e.isCancelled = true
 
