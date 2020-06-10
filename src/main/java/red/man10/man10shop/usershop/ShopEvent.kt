@@ -72,7 +72,7 @@ class ShopEvent : Listener, CommandExecutor {
 
         val price = lines[1].toDouble()
 
-        if (price <0)return
+        if (price <0.1)return
 
         if (price> maxPrice)return
 
@@ -296,8 +296,7 @@ class ShopEvent : Listener, CommandExecutor {
 
             val price = p3[1].toDouble()
 
-            if (price<1
-                    || price> maxPrice){
+            if (price<0.1|| price> maxPrice){
                 sendMsg(p0,"§c§l値段設定に問題があります！")
                 return true
             }

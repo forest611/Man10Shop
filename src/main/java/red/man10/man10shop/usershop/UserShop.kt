@@ -321,14 +321,15 @@ class UserShop {
                     sendMsg(p,"§cショップのオーナーがお金を持っていないようです！")
                     return false
                 }
+                database.logNormal(p, "SellItem x ${item.amount} ID:$id", price)
 
-                p.inventory.removeItem(item)
+//                p.inventory.removeItem(item)
+                item.amount = 0
 
                 data.container.add(item)
 
                 bank.deposit(p.uniqueId,price,"ShopProfit")
 
-                database.logNormal(p, "SellItem x ${item.amount} ID:$id", price)
 
                 return true
             }
@@ -354,16 +355,14 @@ class UserShop {
                 sendMsg(p,"§cショップのオーナーがお金を持っていないようです！")
                 return false
             }
+            database.logNormal(p, "SellItem x ${item.amount} ID:$id", price)
 
-//            p.inventory.removeItem(pItem)
-//
             item.amount =  item.amount -1
 
             data.container.add(pItem)
 
             bank.deposit(p.uniqueId,price,"ShopProfit")
 
-            database.logNormal(p, "SellItem x ${item.amount} ID:$id", price)
 
             return true
         }
