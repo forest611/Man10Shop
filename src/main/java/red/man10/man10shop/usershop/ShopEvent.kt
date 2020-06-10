@@ -301,6 +301,13 @@ class ShopEvent : Listener, CommandExecutor {
                 return true
             }
 
+            if (vault.getBalance(p0.uniqueId) <10){
+                sendMsg(p0,"§c§lショップのアプデ料に10円必要です！")
+                return true
+            }
+
+            vault.withdraw(p0.uniqueId,10.0)
+
             val paper = ItemStack(Material.PAPER)
 
             val meta = paper.itemMeta
