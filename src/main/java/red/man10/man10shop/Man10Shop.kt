@@ -95,6 +95,7 @@ class Man10Shop : JavaPlugin(){
         server.pluginManager.registerEvents(red.man10.man10shop.usershop.ShopEvent(),this)
         getCommand("man10shop")!!.setExecutor(this)
         getCommand("createshop")!!.setExecutor(Commands())
+        getCommand("editshop")!!.setExecutor(red.man10.man10shop.usershop.ShopEvent())
 
     }
 

@@ -2,6 +2,7 @@ package red.man10.man10shop.usershop
 
 import org.apache.commons.lang.math.NumberUtils
 import org.bukkit.Bukkit
+import org.bukkit.Material
 import org.bukkit.block.Sign
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
@@ -14,6 +15,7 @@ import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.block.SignChangeEvent
 import org.bukkit.event.inventory.InventoryCloseEvent
 import org.bukkit.event.player.PlayerInteractEvent
+import org.bukkit.inventory.ItemStack
 import red.man10.man10shop.Man10Shop.Companion.CREATE
 import red.man10.man10shop.Man10Shop.Companion.OP
 import red.man10.man10shop.Man10Shop.Companion.USER
@@ -29,7 +31,7 @@ import red.man10.man10shop.Man10Shop.Companion.userShop
 import red.man10.man10shop.Man10Shop.Companion.vault
 import kotlin.math.cos
 
-class ShopEvent : Listener{
+class ShopEvent : Listener, CommandExecutor {
 
     val checkMap = HashMap<Player,Int>()
     val isEdit = mutableListOf<Int>()
@@ -134,7 +136,26 @@ class ShopEvent : Listener{
 
             //自分のショップだった場合リターン
             if (shop.second.ownerUUId == p.uniqueId){
+                val item = p.inventory.itemInMainHand
+
+                if (item.hasItemMeta() && item.itemMeta.displayName.indexOf("§a§lman10shop") == 0){
+
+                    val lore = item.lore!!
+
+                    userShop.updateShop(shop.first,p,lore[1].toDouble(), lore[0] == "b")
+
+                    sign.setLine(0, USERSHOP)
+                    sign.setLine(1,"§b§l${p.name}")
+                    sign.setLine(2,"${if (lore[0] == "b") "§d§lB" else "§b§lS"}§e§l${lore[1].toDouble()}")
+                    sign.setLine(3,lore[2].replace("&","§"))
+
+                    sign.update()
+                    sendMsg(p,"§a§lショップをアップデートしました")
+                    return
+
+                }
                 sendMsg(p,"§c§lこれは自分のショップです！")
+
                 return
             }
 
@@ -254,6 +275,46 @@ class ShopEvent : Listener{
             isEdit.remove(id)
 
         }
+    }
+
+    override fun onCommand(p0: CommandSender, p1: Command, p2: String, p3: Array<out String>): Boolean {
+        if (p2 != "editshop")return true
+
+        if (p0 !is Player)return true
+        //editshop type price text
+        if (p3.size == 3){
+
+            if (p3[0] != "b" && p3[0] != "s"){
+                sendMsg(p0,"§c§l販売看板なら「b」買取看板なら「s」と入力してください！")
+                return true
+            }
+
+            if (!NumberUtils.isNumber(p3[1])){
+                sendMsg(p0,"§c§l数字を入力してください！")
+                return true
+            }
+
+            val price = p3[1].toDouble()
+
+            if (price<1
+                    || price> maxPrice){
+                sendMsg(p0,"§c§l値段設定に問題があります！")
+                return true
+            }
+
+            val paper = ItemStack(Material.PAPER)
+
+            val meta = paper.itemMeta
+            meta.setDisplayName("§a§lman10shop")
+            meta.lore = mutableListOf(p3[0],p3[1],p3[2])
+
+            paper.itemMeta = meta
+
+            p0.inventory.addItem(paper)
+        }
+
+        return true
+
     }
 
 

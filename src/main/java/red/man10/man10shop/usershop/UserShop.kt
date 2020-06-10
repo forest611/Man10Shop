@@ -355,7 +355,9 @@ class UserShop {
                 return false
             }
 
-            p.inventory.removeItem(pItem)
+//            p.inventory.removeItem(pItem)
+//
+            item.amount =  item.amount -1
 
             data.container.add(pItem)
 

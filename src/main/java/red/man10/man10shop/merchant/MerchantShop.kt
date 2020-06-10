@@ -28,8 +28,8 @@ class MerchantShop {
 
                 val data = MerchantShopData()
 
-                data.server = rs.getString("server")
-                data.world = rs.getString("world")
+                data.server = rs.getString("server")?:pl.server.name
+                data.world = rs.getString("world")?:"world"
 
                 data.x = rs.getInt("locX")
                 data.y = rs.getInt("locY")

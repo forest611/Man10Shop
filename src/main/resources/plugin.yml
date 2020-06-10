@@ -12,5 +12,5 @@ commands:
     default: op
   man10shop:
     default: op
-  shopbal:
+  editshop:
     default: op
