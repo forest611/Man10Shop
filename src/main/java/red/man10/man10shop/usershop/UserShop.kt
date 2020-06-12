@@ -324,9 +324,11 @@ class UserShop {
                 database.logNormal(p, "SellItem x ${item.amount} ID:$id", price)
 
 //                p.inventory.removeItem(item)
+
+                val containerItem = item.clone()
                 item.amount = 0
 
-                data.container.add(item)
+                data.container.add(containerItem)
 
                 bank.deposit(p.uniqueId,price,"ShopProfit")
 

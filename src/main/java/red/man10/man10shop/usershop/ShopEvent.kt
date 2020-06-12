@@ -55,7 +55,7 @@ class ShopEvent : Listener, CommandExecutor {
 
 
         //////同じ場所にショップがあったら復元
-        if (lines.isEmpty() && id!=null){
+        if (id!=null){
 
             e.setLine(0, USERSHOP)
             e.setLine(1,"§b§l${Bukkit.getOfflinePlayer(id.second.ownerUUId).name}")
@@ -78,20 +78,20 @@ class ShopEvent : Listener, CommandExecutor {
 
         val isBuy = lines[0].replace("shop","") == "b"
 
-        //////////////ショップをアップデート
-        if (id != null){
-
-            userShop.updateShop(id.first,p,price,isBuy)
-
-            sendMsg(p,"§a§lショップをアップデートしました！")
-
-            e.setLine(0, USERSHOP)
-            e.setLine(1,"§b§l${p.name}")
-            e.setLine(2,"${if (isBuy) "§d§lB" else "§b§lS"}§e§l${price}")
-            e.setLine(3,lines[2].replace("&","§"))
-
-            return
-        }
+//        //////////////ショップをアップデート
+//        if (id != null){
+//
+//            userShop.updateShop(id.first,p,price,isBuy)
+//
+//            sendMsg(p,"§a§lショップをアップデートしました！")
+//
+//            e.setLine(0, USERSHOP)
+//            e.setLine(1,"§b§l${p.name}")
+//            e.setLine(2,"${if (isBuy) "§d§lB" else "§b§lS"}§e§l${price}")
+//            e.setLine(3,lines[2].replace("&","§"))
+//
+//            return
+//        }
 
         //////////ショップ代を支払う
         if (vault.getBalance(p.uniqueId) < cost){
@@ -150,6 +150,7 @@ class ShopEvent : Listener, CommandExecutor {
                     sign.setLine(3,lore[2].replace("&","§"))
 
                     sign.update()
+                    p.inventory.removeItem(item)
                     sendMsg(p,"§a§lショップをアップデートしました")
                     return
 
