@@ -85,7 +85,6 @@ class ShopEvent:Listener {
         if (sign.lines[0] != shopTitle)return
 
         val signLoc = sign.location
-        val pLoc = p.location
 
         val id = merchantShop.getShop(signLoc,p.server)
 
@@ -93,19 +92,20 @@ class ShopEvent:Listener {
 
         p.openMerchant(merchantShops[id]!!.shop,true)
 
-        //ログ
-        mysqlQueue.add("INSERT INTO log " +
-                "(player, uuid, server, world, locX, locY, locZ, logType, note)" +
-                " VALUES (" +
-                "'${p.name}', " +
-                "'${p.uniqueId}', " +
-                "'${p.server.name}', " +
-                "'${pLoc.world.name}', " +
-                "${pLoc.x}, " +
-                "${pLoc.y}, " +
-                "${pLoc.z}, " +
-                "'OpenMerchantShop', " +
-                "'ID:$id');")
+//        //ログ
+//        mysqlQueue.add("INSERT INTO log " +
+//                "(player, uuid, server, world, locX, locY, locZ, logType, note)" +
+//                " VALUES (" +
+//                "'${p.name}', " +
+//                "'${p.uniqueId}', " +
+//                "'${p.server.name}', " +
+//                "'${pLoc.world.name}', " +
+//                "${pLoc.x}, " +
+//                "${pLoc.y}, " +
+//                "${pLoc.z}, " +
+//                "'OpenMerchantShop', " +
+//                "'ID:$id');")
+        database.logNormal(p,"OpenMerchantShop(ID:$id)",0.0)
     }
 
     //////////////////////////////

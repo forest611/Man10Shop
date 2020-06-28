@@ -1,5 +1,7 @@
 package red.man10.man10shop.usershop
 
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import org.apache.commons.lang.math.NumberUtils
 import org.bukkit.Bukkit
 import org.bukkit.Material
@@ -101,8 +103,11 @@ class ShopEvent : Listener, CommandExecutor {
 
         vault.withdraw(p.uniqueId, cost)
 
-        userShop.create(p,e.block.location,price,isBuy)
-        sendMsg(p,"§a§l新規ショップを作成しました！")
+        GlobalScope.launch {
+            userShop.create(p,e.block.location,price,isBuy)
+            sendMsg(p,"§a§l新規ショップを作成しました！")
+        }
+
 
         e.setLine(0, USERSHOP)
         e.setLine(1,"§b§l${p.name}")

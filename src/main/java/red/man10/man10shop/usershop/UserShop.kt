@@ -92,38 +92,34 @@ class UserShop {
 
         data.price = price
 
-        Thread(Runnable {
+        mysql.execute("INSERT INTO user_shop_list " +
+                "(player, uuid, server, world, " +
+                "locX, locY, locZ, buy, price,shop_container) " +
+                "VALUES (" +
+                "'${p.name}', " +
+                "'${p.uniqueId}', " +
+                "'${p.server.name}', " +
+                "'${location.world.name}', " +
+                "${data.loc.first}, " +
+                "${data.loc.second}, " +
+                "${data.loc.third}, " +
+                "${if (isBuy) 1 else 0}, $price," +
+                "'${database.itemStackArrayToBase64(data.container.toTypedArray())}');")
 
-            mysql.execute("INSERT INTO user_shop_list " +
-                    "(player, uuid, server, world, " +
-                    "locX, locY, locZ, buy, price,shop_container) " +
-                    "VALUES (" +
-                    "'${p.name}', " +
-                    "'${p.uniqueId}', " +
-                    "'${p.server.name}', " +
-                    "'${location.world.name}', " +
-                    "${data.loc.first}, " +
-                    "${data.loc.second}, " +
-                    "${data.loc.third}, " +
-                    "${if (isBuy) 1 else 0}, $price," +
-                    "'${database.itemStackArrayToBase64(data.container.toTypedArray())}');")
+        val rs = mysql.query("SELECT t.*" +
+                "FROM user_shop_list t " +
+                "ORDER BY id DESC " +
+                "LIMIT 501; ")?:return
 
-            val rs = mysql.query("SELECT t.*" +
-                    "FROM user_shop_list t " +
-                    "ORDER BY id DESC " +
-                    "LIMIT 501; ")?:return@Runnable
+        rs.next()
 
-            rs.next()
+        val id = rs.getInt("id")
 
-            val id = rs.getInt("id")
+        userShop[id] = data
 
-            userShop[id] = data
+        database.logNormal(p,"CreateNewShop (${if (isBuy) "buy" else "sell"})",price)
 
-            database.logNormal(p,"CreateNewShop (${if (isBuy) "buy" else "sell"})",price)
-
-            sendMsg(p,"§a§l作成完了")
-
-        }).start()
+        sendMsg(p,"§a§l作成完了")
 
     }
 
