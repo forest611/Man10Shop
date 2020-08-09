@@ -31,7 +31,6 @@ import red.man10.man10shop.Man10Shop.Companion.sendMsg
 import red.man10.man10shop.Man10Shop.Companion.sendOP
 import red.man10.man10shop.Man10Shop.Companion.userShop
 import red.man10.man10shop.Man10Shop.Companion.vault
-import kotlin.math.cos
 
 class ShopEvent : Listener, CommandExecutor {
 
@@ -78,22 +77,7 @@ class ShopEvent : Listener, CommandExecutor {
 
         if (price> maxPrice)return
 
-        val isBuy = lines[0].replace("shop","") == "b"
-
-//        //////////////ショップをアップデート
-//        if (id != null){
-//
-//            userShop.updateShop(id.first,p,price,isBuy)
-//
-//            sendMsg(p,"§a§lショップをアップデートしました！")
-//
-//            e.setLine(0, USERSHOP)
-//            e.setLine(1,"§b§l${p.name}")
-//            e.setLine(2,"${if (isBuy) "§d§lB" else "§b§lS"}§e§l${price}")
-//            e.setLine(3,lines[2].replace("&","§"))
-//
-//            return
-//        }
+        val isBuy = lines[0] == "shop" || lines[0] == "shopb"
 
         //////////ショップ代を支払う
         if (vault.getBalance(p.uniqueId) < cost){
@@ -106,6 +90,13 @@ class ShopEvent : Listener, CommandExecutor {
         GlobalScope.launch {
             userShop.create(p,e.block.location,price,isBuy)
             sendMsg(p,"§a§l新規ショップを作成しました！")
+
+            if (isBuy){
+                sendMsg(p,"§a§l左クリックでショップのコンテナを開き、販売するアイテムを入れてください！")
+            }else{
+                sendMsg(p,"§a§l左クリックでショップのコンテナを開き、左上に買い取るアイテムを入れてください！")
+            }
+
         }
 
 
@@ -283,46 +274,53 @@ class ShopEvent : Listener, CommandExecutor {
         }
     }
 
-    override fun onCommand(p0: CommandSender, p1: Command, p2: String, p3: Array<out String>): Boolean {
-        if (p2 != "editshop")return true
+    override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
+        if (label != "editshop" && label !="shop")return true
 
-        if (p0 !is Player)return true
+        if (sender !is Player)return true
+
+        if (args.isEmpty()){
+            sendMsg(sender,"§d§l/editshop <b/s> <Price/値段> <看板に表示するメッセージ>")
+            return true
+        }
+
         //editshop type price text
-        if (p3.size == 3){
+        if (args.size == 3){
 
-            if (p3[0] != "b" && p3[0] != "s"){
-                sendMsg(p0,"§c§l販売看板なら「b」買取看板なら「s」と入力してください！")
+            if (args[0] != "b" && args[0] != "s"){
+                sendMsg(sender,"§c§l販売看板なら「b」買取看板なら「s」と入力してください！")
                 return true
             }
 
-            if (!NumberUtils.isNumber(p3[1])){
-                sendMsg(p0,"§c§l数字を入力してください！")
+            if (!NumberUtils.isNumber(args[1])){
+                sendMsg(sender,"§c§l数字を入力してください！")
                 return true
             }
 
-            val price = p3[1].toDouble()
+            val price = args[1].toDouble()
 
             if (price<0.1|| price> maxPrice){
-                sendMsg(p0,"§c§l値段設定に問題があります！")
+                sendMsg(sender,"§c§l値段設定に問題があります！")
+                sendMsg(sender,"§c§l0.1円以上、$maxPrice 未満に設定してください！")
                 return true
             }
 
-            if (vault.getBalance(p0.uniqueId) <10){
-                sendMsg(p0,"§c§lショップのアプデ料に10円必要です！")
+            if (vault.getBalance(sender.uniqueId) <10){
+                sendMsg(sender,"§c§lショップのアップデート料に10円必要です！")
                 return true
             }
 
-            vault.withdraw(p0.uniqueId,10.0)
+            vault.withdraw(sender.uniqueId,10.0)
 
             val paper = ItemStack(Material.PAPER)
 
             val meta = paper.itemMeta
             meta.setDisplayName("§a§lman10shop")
-            meta.lore = mutableListOf(p3[0],p3[1],p3[2])
+            meta.lore = mutableListOf(args[0],args[1],args[2])
 
             paper.itemMeta = meta
 
-            p0.inventory.addItem(paper)
+            sender.inventory.addItem(paper)
         }
 
         return true

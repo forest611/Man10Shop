@@ -6,11 +6,13 @@ depend:
   - Man10OfflineBank
 main: red.man10.man10shop.Man10Shop
 auther: [forest611]
-api-version: 1.13
+api-version: 1.15
 commands:
   createshop:
     default: op
   man10shop:
     default: op
   editshop:
+    default: op
+  shop:
     default: op

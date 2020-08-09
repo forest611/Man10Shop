@@ -77,7 +77,6 @@ class UserShop {
     @Synchronized
     fun create(p: Player,location: Location,price:Double,isBuy:Boolean){
 
-        sendMsg(p,"§e§l新規ショップを作成中")
 
         val data = UserShopData()
 
@@ -119,7 +118,6 @@ class UserShop {
 
         database.logNormal(p,"CreateNewShop (${if (isBuy) "buy" else "sell"})",price)
 
-        sendMsg(p,"§a§l作成完了")
 
     }
 
