@@ -152,6 +152,24 @@ class UserShop {
     }
 
     /**
+     * ショップのコンテナのみをアップデート
+     *
+     * @param id shop id
+     * @param container shop container
+     */
+    fun updateShop(id:Int,p:Player, container:MutableList<ItemStack>){
+
+        val data = userShop[id]?:return
+
+        mysqlQueue.add("UPDATE user_shop_list t SET " +
+                "t.shop_container = '${database.itemStackArrayToBase64(container.toTypedArray())}' " +
+                "WHERE t.id = $id;")
+
+        database.logNormal(p,"UpdateShop ID:$id",0.0)
+
+    }
+
+    /**
      * ショップを再設置したときのdb処理
      */
     fun updateShop(id:Int,p:Player,price: Double,isBuy: Boolean){
@@ -248,6 +266,8 @@ class UserShop {
 
                 set(id, data)
 
+                updateShop(id,p,container)
+
                 database.logNormal(p, "BuyItem x ${item.amount} ID:$id", price)
                 return true
             }
@@ -277,6 +297,8 @@ class UserShop {
             data.container = container
 
             set(id, data)
+
+            updateShop(id,p,container)
 
             p.inventory.addItem(pItem)
 
@@ -324,8 +346,9 @@ class UserShop {
 
                 data.container.add(containerItem)
 
-                bank.deposit(p.uniqueId,price,"ShopProfit")
+                updateShop(id,p,data.container)
 
+                bank.deposit(p.uniqueId,price,"ShopProfit")
 
                 return true
             }
@@ -356,6 +379,8 @@ class UserShop {
             item.amount =  item.amount -1
 
             data.container.add(pItem)
+
+            updateShop(id,p,data.container)
 
             bank.deposit(p.uniqueId,price,"ShopProfit")
 
