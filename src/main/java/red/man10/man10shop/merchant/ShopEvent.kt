@@ -90,21 +90,8 @@ class ShopEvent:Listener {
 
         if (id == -1)return
 
-        p.openMerchant(merchantShops[id]!!.shop,true)
+        p.openMerchant(merchantShop.itemToMerchant(merchantShops[id]!!.shop,id),true)
 
-//        //ログ
-//        mysqlQueue.add("INSERT INTO log " +
-//                "(player, uuid, server, world, locX, locY, locZ, logType, note)" +
-//                " VALUES (" +
-//                "'${p.name}', " +
-//                "'${p.uniqueId}', " +
-//                "'${p.server.name}', " +
-//                "'${pLoc.world.name}', " +
-//                "${pLoc.x}, " +
-//                "${pLoc.y}, " +
-//                "${pLoc.z}, " +
-//                "'OpenMerchantShop', " +
-//                "'ID:$id');")
         database.logNormal(p,"OpenMerchantShop(ID:$id)",0.0)
     }
 

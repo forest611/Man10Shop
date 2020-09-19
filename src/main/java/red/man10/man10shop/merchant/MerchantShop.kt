@@ -35,7 +35,8 @@ class MerchantShop {
                 data.y = rs.getInt("locY")
                 data.z = rs.getInt("locZ")
 
-                data.shop = Man10Shop.merchantShop.itemToMerchant(database.itemStackArrayFromBase64(rs.getString("shop_item")),id)
+//                data.shop = Man10Shop.merchantShop.itemToMerchant(database.itemStackArrayFromBase64(rs.getString("shop_item")),id)
+                data.shop = database.itemStackArrayFromBase64(rs.getString("shop_item"))
 
                 Man10Shop.merchantShops[id] = data
 
@@ -89,7 +90,8 @@ class MerchantShop {
             rs.close()
             mysql.close()
 
-            data.shop = itemToMerchant(shopList,id)
+//            data.shop = itemToMerchant(shopList,id)
+            data.shop = shopList
 
             database.logOP(p,id,"register")
 
@@ -221,7 +223,8 @@ class MerchantShop {
         var y = 0
         var z = 0
 
-        var shop = Bukkit.createMerchant("AdminShop")
+        //var shop = Bukkit.createMerchant("AdminShop")
+        var shop = mutableListOf<ItemStack>()
     }
 
 }

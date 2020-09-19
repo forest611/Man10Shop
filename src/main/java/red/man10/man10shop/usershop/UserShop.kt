@@ -108,7 +108,7 @@ class UserShop {
         val rs = mysql.query("SELECT t.*" +
                 "FROM user_shop_list t " +
                 "ORDER BY id DESC " +
-                "LIMIT 501; ")?:return
+                "LIMIT 1; ")?:return
 
         rs.next()
 
