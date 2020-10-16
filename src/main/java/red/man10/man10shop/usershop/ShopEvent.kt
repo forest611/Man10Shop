@@ -29,10 +29,9 @@ import red.man10.man10shop.Man10Shop.Companion.maxPrice
 import red.man10.man10shop.Man10Shop.Companion.pluginEnable
 import red.man10.man10shop.Man10Shop.Companion.sendMsg
 import red.man10.man10shop.Man10Shop.Companion.sendOP
-import red.man10.man10shop.Man10Shop.Companion.userShop
 import red.man10.man10shop.Man10Shop.Companion.vault
 
-class ShopEvent : Listener, CommandExecutor {
+object ShopEvent : Listener, CommandExecutor {
 
     val checkMap = HashMap<Player,Int>()
     val isEdit = mutableListOf<Int>()
@@ -52,7 +51,7 @@ class ShopEvent : Listener, CommandExecutor {
 
         val lines = e.lines.clone()
 
-        val id = userShop.getShop(e.block.location,p.server.name)
+        val id = UserShop.getShop(e.block.location,p.server.name)
 
 
         //////同じ場所にショップがあったら復元
@@ -88,7 +87,7 @@ class ShopEvent : Listener, CommandExecutor {
         vault.withdraw(p.uniqueId, cost)
 
         GlobalScope.launch {
-            userShop.create(p,e.block.location,price,isBuy)
+            UserShop.create(p,e.block.location,price,isBuy)
             sendMsg(p,"§a§l新規ショップを作成しました！")
 
             if (isBuy){
@@ -124,7 +123,7 @@ class ShopEvent : Listener, CommandExecutor {
 
         if (sign !is Sign)return
 
-        val shop = userShop.getShop(sign.location,p.server.name)?:return
+        val shop = UserShop.getShop(sign.location,p.server.name)?:return
 
 
         //取引する
@@ -138,7 +137,7 @@ class ShopEvent : Listener, CommandExecutor {
 
                     val lore = item.lore!!
 
-                    userShop.updateShop(shop.first,p,lore[1].toDouble(), lore[0] == "b")
+                    UserShop.updateShop(shop.first,p,lore[1].toDouble(), lore[0] == "b")
 
                     sign.setLine(0, USERSHOP)
                     sign.setLine(1,"§b§l${p.name}")
@@ -188,7 +187,7 @@ class ShopEvent : Listener, CommandExecutor {
 
             checkMap.remove(p)
 
-            if (userShop.tradeItem(shop.first,p, p.isSneaking)){
+            if (UserShop.tradeItem(shop.first,p, p.isSneaking)){
                 sendMsg(p,"§a§l取引成功！")
             }else{
                 sendMsg(p,"§c§l取引失敗！")
@@ -204,7 +203,7 @@ class ShopEvent : Listener, CommandExecutor {
 
             isEdit.add(shop.first)
 
-            userShop.openContainer(p,shop.first)
+            UserShop.openContainer(p,shop.first)
 
             return
         }
@@ -224,7 +223,7 @@ class ShopEvent : Listener, CommandExecutor {
 
         if (sign !is Sign)return
 
-        val pair = userShop.getShop(sign.location,p.server.name) ?: return
+        val pair = UserShop.getShop(sign.location,p.server.name) ?: return
 
         if (p.uniqueId != pair.second.ownerUUId &&!p.hasPermission(OP)){
             e.isCancelled = true
@@ -236,10 +235,10 @@ class ShopEvent : Listener, CommandExecutor {
             return
         }
 
-        if (userShop.get(pair.first).container.isNotEmpty()){
+        if (UserShop.get(pair.first).container.isNotEmpty()){
             if (p.hasPermission(OP) && breakMode[p] != null && breakMode[p]!!){
 
-                userShop.deleteShop(pair.first,p)
+                UserShop.deleteShop(pair.first,p)
 
                 sendOP("§a${p.name}がユーザーのショップを強制削除しました")
                 return
@@ -250,7 +249,7 @@ class ShopEvent : Listener, CommandExecutor {
             return
         }
 
-        userShop.deleteShop(pair.first,p)
+        UserShop.deleteShop(pair.first,p)
 
         sendMsg(p,"§a§lショップを削除しました！")
 
@@ -263,11 +262,11 @@ class ShopEvent : Listener, CommandExecutor {
 
         if (p !is Player)return
 
-        if (e.view.title.indexOf(userShop.CONTAINER_NAME) == 0){
+        if (e.view.title.indexOf(UserShop.CONTAINER_NAME) == 0){
 
-            val id = e.view.title.replace(userShop.CONTAINER_NAME,"").toInt()
+            val id = e.view.title.replace(UserShop.CONTAINER_NAME,"").toInt()
 
-            userShop.updateShop(id,p,e.inventory)
+            UserShop.updateShop(id,p,e.inventory)
 
             isEdit.remove(id)
 

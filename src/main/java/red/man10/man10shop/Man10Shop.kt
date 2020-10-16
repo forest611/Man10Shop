@@ -4,7 +4,6 @@ import org.bukkit.Bukkit
 import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
-import org.bukkit.event.Listener
 import org.bukkit.plugin.java.JavaPlugin
 import red.man10.man10offlinebank.BankAPI
 import red.man10.man10shop.merchant.Commands
@@ -23,11 +22,6 @@ class Man10Shop : JavaPlugin(){
 
         var mysqlQueue = LinkedBlockingQueue<String>()
 
-        lateinit var database: Database
-
-        lateinit var merchantShop: MerchantShop
-        lateinit var userShop : UserShop
-
         lateinit var vault:VaultManager
 
         lateinit var pl : Man10Shop
@@ -43,9 +37,9 @@ class Man10Shop : JavaPlugin(){
             }
         }
 
-        val OP = "man10shop.op"
-        val USER = "man10shop.user"
-        val CREATE = "man10shop.create"
+        const val OP = "man10shop.op"
+        const val USER = "man10shop.user"
+        const val CREATE = "man10shop.create"
 
         val USERSHOP = "§a§lUSER SHOP"
 
@@ -77,25 +71,21 @@ class Man10Shop : JavaPlugin(){
         enableWorld = config.getStringList("enableWorld")
         cost = config.getDouble("cost",10000.0)
 
-        database = Database()
-        merchantShop = MerchantShop()
-        userShop = UserShop()
-
-        database.mysqlQueue()
+        Database.mysqlQueue()
 
         bank = BankAPI(this)
 
         vault = VaultManager(this)
 
         //ショップデータの読み込み
-        merchantShop.loadShopData()
-        userShop.loadShopData()
+        MerchantShop.loadShopData()
+        UserShop.loadShopData()
 
-        server.pluginManager.registerEvents(ShopEvent(),this)
-        server.pluginManager.registerEvents(red.man10.man10shop.usershop.ShopEvent(),this)
+        server.pluginManager.registerEvents(ShopEvent,this)
+        server.pluginManager.registerEvents(red.man10.man10shop.usershop.ShopEvent,this)
         getCommand("man10shop")!!.setExecutor(this)
-        getCommand("createshop")!!.setExecutor(Commands())
-        getCommand("editshop")!!.setExecutor(red.man10.man10shop.usershop.ShopEvent())
+        getCommand("createshop")!!.setExecutor(Commands)
+        getCommand("editshop")!!.setExecutor(red.man10.man10shop.usershop.ShopEvent)
 
     }
 
@@ -123,21 +113,6 @@ class Man10Shop : JavaPlugin(){
         }
 
         val cmd = args[0]
-
-        //ユーザーショップのリスト
-        if (cmd == "userlist"){
-
-        }
-
-        //adminショップ(看板)のリスト
-        if (cmd == "adminlist"){
-
-        }
-
-        //merchantショップのリスト
-        if (cmd == "merchantlist"){
-
-        }
 
         if (cmd == "off"){
             config.set("pluginEnabled",false)
@@ -184,18 +159,18 @@ class Man10Shop : JavaPlugin(){
 
         if (cmd == "reloadconfig"){
 
-            Thread(Runnable {
+            Thread {
 
                 reloadConfig()
 
-                pluginEnable = config.getBoolean("pluginEnabled",true)
-                maxPrice = config.getDouble("maxPrice",100000000.0)
+                pluginEnable = config.getBoolean("pluginEnabled", true)
+                maxPrice = config.getDouble("maxPrice", 100000000.0)
                 enableWorld = config.getStringList("enableWorld")
-                cost = config.getDouble("cost",10000.0)
+                cost = config.getDouble("cost", 10000.0)
 
-                sendMsg(sender,"コンフィグのリロード完了！")
+                sendMsg(sender, "コンフィグのリロード完了！")
 
-            }).start()
+            }.start()
 
         }
 

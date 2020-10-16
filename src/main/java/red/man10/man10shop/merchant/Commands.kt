@@ -8,7 +8,7 @@ import org.bukkit.entity.Player
 import red.man10.man10shop.Man10Shop
 import red.man10.man10shop.Man10Shop.Companion.OP
 
-class Commands:CommandExecutor {
+object Commands:CommandExecutor {
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
 
         if (sender !is Player)return false

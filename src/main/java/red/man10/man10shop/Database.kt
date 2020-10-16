@@ -11,21 +11,21 @@ import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 
-class Database {
+object Database {
 
 
     fun mysqlQueue(){
-        Thread(Runnable {
-            val sql = MySQLManager(pl,"Man10ShopQueue")
-            try{
-                while (true){
+        Thread {
+            val sql = MySQLManager(pl, "Man10ShopQueue")
+            try {
+                while (true) {
                     val take = mysqlQueue.take()
                     sql.execute(take)
                 }
-            }catch (e:InterruptedException){
+            } catch (e: InterruptedException) {
 
             }
-        }).start()
+        }.start()
     }
 
 

@@ -6,9 +6,8 @@ import org.bukkit.Material
 import org.bukkit.entity.Player
 import org.bukkit.inventory.Inventory
 import org.bukkit.inventory.ItemStack
-import red.man10.man10shop.Man10Shop
+import red.man10.man10shop.Database
 import red.man10.man10shop.Man10Shop.Companion.bank
-import red.man10.man10shop.Man10Shop.Companion.database
 import red.man10.man10shop.Man10Shop.Companion.mysqlQueue
 import red.man10.man10shop.Man10Shop.Companion.pl
 import red.man10.man10shop.Man10Shop.Companion.sendMsg
@@ -17,12 +16,12 @@ import red.man10.man10shop.MySQLManager
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
-class UserShop {
+object UserShop {
 
     private val userShop = ConcurrentHashMap<Int,UserShopData>()
     private var mysql : MySQLManager = MySQLManager(pl,"man10Shop")
 
-    val CONTAINER_NAME = "§6§lショップコンテナ"
+    const val CONTAINER_NAME = "§6§lショップコンテナ"
 
     /**
      * ショップデータの読み込み
@@ -50,7 +49,7 @@ class UserShop {
 
             data.isBuy = rs.getInt("buy")==1
 
-            data.container = database.itemStackArrayFromBase64(rs.getString("shop_container"))
+            data.container = Database.itemStackArrayFromBase64(rs.getString("shop_container"))
 
             data.price = rs.getDouble("price")
 
@@ -103,7 +102,7 @@ class UserShop {
                 "${data.loc.second}, " +
                 "${data.loc.third}, " +
                 "${if (isBuy) 1 else 0}, $price," +
-                "'${database.itemStackArrayToBase64(data.container.toTypedArray())}');")
+                "'${Database.itemStackArrayToBase64(data.container.toTypedArray())}');")
 
         val rs = mysql.query("SELECT t.*" +
                 "FROM user_shop_list t " +
@@ -116,7 +115,7 @@ class UserShop {
 
         userShop[id] = data
 
-        database.logNormal(p,"CreateNewShop (${if (isBuy) "buy" else "sell"})",price)
+        Database.logNormal(p,"CreateNewShop (${if (isBuy) "buy" else "sell"})",price)
 
 
     }
@@ -144,10 +143,10 @@ class UserShop {
         set(id,data)
 
         mysqlQueue.add("UPDATE user_shop_list t SET " +
-                "t.shop_container = '${database.itemStackArrayToBase64(data.container.toTypedArray())}' " +
+                "t.shop_container = '${Database.itemStackArrayToBase64(data.container.toTypedArray())}' " +
                 "WHERE t.id = $id;")
 
-        database.logNormal(p,"UpdateShop ID:$id",0.0)
+        Database.logNormal(p,"UpdateShop ID:$id",0.0)
 
     }
 
@@ -162,10 +161,10 @@ class UserShop {
         val data = userShop[id]?:return
 
         mysqlQueue.add("UPDATE user_shop_list t SET " +
-                "t.shop_container = '${database.itemStackArrayToBase64(container.toTypedArray())}' " +
+                "t.shop_container = '${Database.itemStackArrayToBase64(container.toTypedArray())}' " +
                 "WHERE t.id = $id;")
 
-        database.logNormal(p,"UpdateShop ID:$id",0.0)
+        Database.logNormal(p,"UpdateShop ID:$id",0.0)
 
     }
 
@@ -183,7 +182,7 @@ class UserShop {
 
         mysqlQueue.add("UPDATE user_shop_list t SET t.buy = ${if (isBuy) 1 else 0}, t.price = $price WHERE t.id = $id")
 
-        database.logNormal(p,"UpdateShop ID:$id",price)
+        Database.logNormal(p,"UpdateShop ID:$id",price)
     }
 
     /**
@@ -195,7 +194,7 @@ class UserShop {
 
         mysqlQueue.add("DELETE FROM user_shop_list WHERE id = $id;")
 
-        database.logNormal(p,"DeleteShop ID:$id",0.0)
+        Database.logNormal(p,"DeleteShop ID:$id",0.0)
     }
 
     /**
@@ -268,7 +267,7 @@ class UserShop {
 
                 updateShop(id,p,container)
 
-                database.logNormal(p, "BuyItem x ${item.amount} ID:$id", price)
+                Database.logNormal(p, "BuyItem x ${item.amount} ID:$id", price)
                 return true
             }
 
@@ -302,7 +301,7 @@ class UserShop {
 
             p.inventory.addItem(pItem)
 
-            database.logNormal(p, "BuyItem x 1 ID:$id", data.price)
+            Database.logNormal(p, "BuyItem x 1 ID:$id", data.price)
 
             return true
 
@@ -337,7 +336,7 @@ class UserShop {
                     sendMsg(p,"§cショップのオーナーがお金を持っていないようです！")
                     return false
                 }
-                database.logNormal(p, "SellItem x ${item.amount} ID:$id", price)
+                Database.logNormal(p, "SellItem x ${item.amount} ID:$id", price)
 
 //                p.inventory.removeItem(item)
 
@@ -374,7 +373,7 @@ class UserShop {
                 sendMsg(p,"§cショップのオーナーがお金を持っていないようです！")
                 return false
             }
-            database.logNormal(p, "SellItem x ${item.amount} ID:$id", price)
+            Database.logNormal(p, "SellItem x ${item.amount} ID:$id", price)
 
             item.amount =  item.amount -1
 
@@ -424,7 +423,7 @@ class UserShop {
 
         p.openInventory(inv)
 
-        database.logNormal(p,"OpenShopContainer ID:$id",0.0)
+        Database.logNormal(p,"OpenShopContainer ID:$id",0.0)
     }
 
     fun get(id:Int):UserShopData{

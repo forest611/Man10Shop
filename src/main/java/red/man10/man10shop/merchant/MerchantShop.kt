@@ -6,14 +6,14 @@ import org.bukkit.Material
 import org.bukkit.Server
 import org.bukkit.entity.Player
 import org.bukkit.inventory.*
+import red.man10.man10shop.Database
 import red.man10.man10shop.Man10Shop
-import red.man10.man10shop.Man10Shop.Companion.database
 import red.man10.man10shop.Man10Shop.Companion.mysqlQueue
 import red.man10.man10shop.Man10Shop.Companion.pl
 import red.man10.man10shop.MySQLManager
 import java.lang.Exception
 
-class MerchantShop {
+object MerchantShop {
 
     //サバ起動時にショップデータを読み込む
     fun loadShopData(){
@@ -36,7 +36,7 @@ class MerchantShop {
                 data.z = rs.getInt("locZ")
 
 //                data.shop = Man10Shop.merchantShop.itemToMerchant(database.itemStackArrayFromBase64(rs.getString("shop_item")),id)
-                data.shop = database.itemStackArrayFromBase64(rs.getString("shop_item"))
+                data.shop = Database.itemStackArrayFromBase64(rs.getString("shop_item"))
 
                 Man10Shop.merchantShops[id] = data
 
@@ -74,7 +74,7 @@ class MerchantShop {
                     " VALUES (" +
                     "'${p.name}', " +
                     "'${p.uniqueId}', " +
-                    "'${database.itemStackArrayToBase64(shopList.toTypedArray())}');")
+                    "'${Database.itemStackArrayToBase64(shopList.toTypedArray())}');")
 
             val id: Int
 
@@ -93,7 +93,7 @@ class MerchantShop {
 //            data.shop = itemToMerchant(shopList,id)
             data.shop = shopList
 
-            database.logOP(p,id,"register")
+            Database.logOP(p,id,"register")
 
             if (id == -1){
                 p.sendMessage("§3§l作成失敗")
@@ -124,7 +124,7 @@ class MerchantShop {
                 "t.locZ = ${data.z} " +
                 "WHERE t.id = $id")
 
-        database.logOP(p,id,"update")
+        Database.logOP(p,id,"update")
 
     }
 
@@ -137,7 +137,7 @@ class MerchantShop {
 
         mysqlQueue.add("DELETE FROM merchant_shop_list WHERE id = $id;")
 
-        database.logOP(p,id,"delete")
+        Database.logOP(p,id,"delete")
     }
 
     ///////////////////////////////////////

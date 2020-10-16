@@ -9,16 +9,14 @@ import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.block.SignChangeEvent
 import org.bukkit.event.inventory.InventoryCloseEvent
 import org.bukkit.event.player.PlayerInteractEvent
+import red.man10.man10shop.Database
 import red.man10.man10shop.Man10Shop
 import red.man10.man10shop.Man10Shop.Companion.OP
 import red.man10.man10shop.Man10Shop.Companion.USER
-import red.man10.man10shop.Man10Shop.Companion.database
-import red.man10.man10shop.Man10Shop.Companion.merchantShop
 import red.man10.man10shop.Man10Shop.Companion.merchantShops
-import red.man10.man10shop.Man10Shop.Companion.mysqlQueue
 import red.man10.man10shop.Man10Shop.Companion.sendOP
 
-class ShopEvent:Listener {
+object ShopEvent:Listener {
 
     val shopTitle = "§e§lADMIN SHOP"
 
@@ -52,14 +50,14 @@ class ShopEvent:Listener {
 
         merchantShops[id] = data
 
-        merchantShop.updateShop(data, id, p)
+        MerchantShop.updateShop(data, id, p)
 
         e.setLine(0,shopTitle)
         e.setLine(1,"§a§l右クリックで開く")
         e.setLine(2,"§b§lRIGHT CLICK")
         e.setLine(3,"§b§lSIGN")
 
-        database.logOP(p,id,"PlaceShopSign")
+        Database.logOP(p,id,"PlaceShopSign")
 
         sendOP("§a§l${p.name}がショップを設置しました！")
 
@@ -86,13 +84,13 @@ class ShopEvent:Listener {
 
         val signLoc = sign.location
 
-        val id = merchantShop.getShop(signLoc,p.server)
+        val id = MerchantShop.getShop(signLoc,p.server)
 
         if (id == -1)return
 
-        p.openMerchant(merchantShop.itemToMerchant(merchantShops[id]!!.shop,id),true)
+        p.openMerchant(MerchantShop.itemToMerchant(merchantShops[id]!!.shop,id),true)
 
-        database.logNormal(p,"OpenMerchantShop(ID:$id)",0.0)
+        Database.logNormal(p,"OpenMerchantShop(ID:$id)",0.0)
     }
 
     //////////////////////////////
@@ -113,7 +111,7 @@ class ShopEvent:Listener {
 
         val loc = sign.location
 
-        val id = merchantShop.getShop(loc,p.server)
+        val id = MerchantShop.getShop(loc,p.server)
 
         if (id == -1)return
 
@@ -122,7 +120,7 @@ class ShopEvent:Listener {
             return
         }
 
-        merchantShop.deleteShop(id,p)
+        MerchantShop.deleteShop(id,p)
 
         sendOP("§a§l${p.name}がショップを削除しました！")
 
@@ -139,7 +137,7 @@ class ShopEvent:Listener {
         if (e.view.title != "§e§lMan10ShopOp")return
         if (!p.hasPermission(OP))return
 
-        merchantShop.createShop(e.inventory,p)
+        MerchantShop.createShop(e.inventory,p)
 
     }
 
