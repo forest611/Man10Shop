@@ -18,7 +18,7 @@ import red.man10.man10shop.Man10Shop.Companion.sendOP
 
 object ShopEvent:Listener {
 
-    val shopTitle = "§e§lADMIN SHOP"
+    private const val shopTitle = "§e§lADMIN SHOP"
 
     @EventHandler
     fun setShopEvent(e:SignChangeEvent){
