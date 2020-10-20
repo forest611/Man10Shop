@@ -1,5 +1,7 @@
 package red.man10.man10shop
 
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import net.md_5.bungee.api.chat.ClickEvent
 import net.md_5.bungee.api.chat.ComponentBuilder
 import net.md_5.bungee.api.chat.HoverEvent
@@ -215,31 +217,35 @@ class Man10Shop : JavaPlugin(){
 
                 val id = args[1].toInt()
 
-                if (args[2] == "all"){
+                GlobalScope.launch {
+                    if (args[2] == "all"){
 
-                    if (checkMap[sender]==null || checkMap[sender]!=id ){
+                        if (checkMap[sender]==null || checkMap[sender]!=id ){
 
-                        sendMsg(sender,"§a本当にすべて売却しますか？")
-                        sendHoverText(sender,"§c§l[売っちゃう！]","","man10shop sellusershop $id all")
-                        checkMap[sender] = id
-                        return true
+                            sendMsg(sender,"§a本当にすべて売却しますか？")
+                            sendHoverText(sender,"§c§l[売っちゃう！]","","man10shop sellusershop $id all")
+                            checkMap[sender] = id
+                            return@launch
+                        }
+
+                        checkMap.remove(sender)
+
+                        if (UserShop.sellAll(id,sender)){
+                            sendMsg(sender,"§a取引成功")
+                            return@launch
+                        }
+                        sendMsg(sender,"§c取引失敗")
+                        return@launch
                     }
 
-                    checkMap.remove(sender)
-
-                    if (UserShop.sellAll(id,sender)){
+                    if (UserShop.sell(id,sender,args[2].toBoolean())){
                         sendMsg(sender,"§a取引成功")
-                        return true
+                    }else{
+                        sendMsg(sender,"§c取引失敗")
                     }
-                    sendMsg(sender,"§c取引失敗")
-                    return true
                 }
+                return true
 
-                if (UserShop.sell(id,sender,args[2].toBoolean())){
-                    sendMsg(sender,"§a取引成功")
-                }else{
-                    sendMsg(sender,"§c取引失敗")
-                }
 
             }catch (e:Exception){
                 sendMsg(sender,"§c§lERROR:${e.message}")
