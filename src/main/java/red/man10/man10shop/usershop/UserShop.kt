@@ -236,6 +236,12 @@ object UserShop {
         ///////////////購入//////////////////
         if (data.isBuy) {
 
+            if (!p.inventory.contains(Material.AIR)){
+                sendMsg(p,"§cインベントリに空きがない可能性があります")
+
+                return false
+            }
+
             val container = data.container
             val item = container[container.size-1]
 

@@ -1,5 +1,8 @@
 package red.man10.man10shop
 
+import net.md_5.bungee.api.chat.ClickEvent
+import net.md_5.bungee.api.chat.ComponentBuilder
+import net.md_5.bungee.api.chat.HoverEvent
 import org.bukkit.Bukkit
 import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
@@ -41,7 +44,7 @@ class Man10Shop : JavaPlugin(){
         const val USER = "man10shop.user"
         const val CREATE = "man10shop.create"
 
-        val USERSHOP = "§a§lUSER SHOP"
+        const val USERSHOP = "§a§lUSER SHOP"
 
         var maxPrice = 10.0
 
@@ -53,10 +56,21 @@ class Man10Shop : JavaPlugin(){
 
         var breakMode = HashMap<Player,Boolean>()
 
-        fun sendMsg(p:Player,msg:String){
+        fun sendMsg(p: Player, msg:String){
             p.sendMessage("§e[Man10Shop]§r$msg")
         }
 
+        fun sendHoverText(p: Player, text: String, hoverText: String, command: String) {
+            //////////////////////////////////////////
+            //      ホバーテキストとイベントを作成する
+            val hoverEvent = HoverEvent(HoverEvent.Action.SHOW_TEXT, ComponentBuilder(hoverText).create())
+
+            //////////////////////////////////////////
+            //   クリックイベントを作成する
+            val clickEvent = ClickEvent(ClickEvent.Action.RUN_COMMAND, "/$command")
+            val message = ComponentBuilder(text).event(hoverEvent).event(clickEvent).create()
+            p.spigot().sendMessage(*message)
+        }
     }
 
     override fun onEnable() {
