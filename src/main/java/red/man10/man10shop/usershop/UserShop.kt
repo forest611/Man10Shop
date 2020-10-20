@@ -168,22 +168,6 @@ object UserShop {
 
     }
 
-    /**
-     * ショップを再設置したときのdb処理
-     */
-    fun updateShop(id:Int,p:Player,price: Double,isBuy: Boolean){
-
-        val data = userShop[id]?:return
-
-        data.isBuy = isBuy
-        data.price = price
-
-        set(id,data)
-
-        mysqlQueue.add("UPDATE user_shop_list t SET t.buy = ${if (isBuy) 1 else 0}, t.price = $price WHERE t.id = $id")
-
-        Database.logNormal(p,"UpdateShop ID:$id",price)
-    }
 
     /**
      * ショップの削除

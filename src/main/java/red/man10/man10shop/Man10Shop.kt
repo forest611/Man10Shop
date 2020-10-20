@@ -26,20 +26,13 @@ class Man10Shop : JavaPlugin(){
 
         var mysqlQueue = LinkedBlockingQueue<String>()
 
+        val checkMap = HashMap<Player,Int>()
+
         lateinit var vault:VaultManager
 
         lateinit var pl : Man10Shop
 
         lateinit var bank : BankAPI
-
-        //OPにのみメッセージを送る
-        fun sendOP(message:String){
-            for (p in Bukkit.getOnlinePlayers()){
-                if (!p.hasPermission("man10shop.op"))continue
-
-                p.sendMessage(message)
-            }
-        }
 
         const val OP = "man10shop.op"
         const val USER = "man10shop.user"
@@ -71,6 +64,15 @@ class Man10Shop : JavaPlugin(){
             val clickEvent = ClickEvent(ClickEvent.Action.RUN_COMMAND, "/$command")
             val message = ComponentBuilder(text).event(hoverEvent).event(clickEvent).create()
             p.spigot().sendMessage(*message)
+        }
+
+        //OPにのみメッセージを送る
+        fun sendOP(message:String){
+            for (p in Bukkit.getOnlinePlayers()){
+                if (!p.hasPermission(OP))continue
+
+                p.sendMessage(message)
+            }
         }
     }
 
@@ -211,8 +213,21 @@ class Man10Shop : JavaPlugin(){
 
             try {
 
+                val id = args[1].toInt()
+
                 if (args[2] == "all"){
-                    if (UserShop.sellAll(args[1].toInt(),sender)){
+
+                    if (checkMap[sender]==null || checkMap[sender]!=id ){
+
+                        sendMsg(sender,"§a本当にすべて売却しますか？")
+                        sendHoverText(sender,"§c§l[売っちゃう！]","","man10shop sellusershop $id all")
+                        checkMap[sender] = id
+                        return true
+                    }
+
+                    checkMap.remove(sender)
+
+                    if (UserShop.sellAll(id,sender)){
                         sendMsg(sender,"§a取引成功")
                         return true
                     }
@@ -220,8 +235,7 @@ class Man10Shop : JavaPlugin(){
                     return true
                 }
 
-
-                if (UserShop.sell(args[1].toInt(),sender,args[2].toBoolean())){
+                if (UserShop.sell(id,sender,args[2].toBoolean())){
                     sendMsg(sender,"§a取引成功")
                 }else{
                     sendMsg(sender,"§c取引失敗")

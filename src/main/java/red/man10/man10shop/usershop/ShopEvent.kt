@@ -34,7 +34,6 @@ import red.man10.man10shop.Man10Shop.Companion.vault
 
 object ShopEvent : Listener, CommandExecutor {
 
-    val checkMap = HashMap<Player,Int>()
     val isEdit = mutableListOf<Int>()
 
 
@@ -168,26 +167,6 @@ object ShopEvent : Listener, CommandExecutor {
                 return
             }
 
-            //ショップの確認
-//            if (checkMap[p] ==null || checkMap[p] != shop.first){
-//
-//
-//                val item = shop.second.container[shop.second.container.size-1]
-//
-//                val name = if (!item.hasItemMeta()) item.i18NDisplayName!! else item.itemMeta.displayName
-//
-//                val lore = if (item.hasItemMeta()&& item.itemMeta.lore != null) item.itemMeta.lore!![0] else "説明無し"
-//
-//                sendMsg(p,"§e§k§lXXXX§r${if (shop.second.isBuy) "§d§l購入確認" else "§b§l売却確認"}§e§k§lXXXX")
-//                sendMsg(p,name)
-//                sendMsg(p,lore)
-//
-//                checkMap[p] = shop.first
-//                return
-//            }
-//
-//            checkMap.remove(p)
-
             val item = shop.second.container[shop.second.container.size-1]
 
             val name = if (!item.hasItemMeta()) item.i18NDisplayName!! else item.itemMeta.displayName
@@ -202,17 +181,11 @@ object ShopEvent : Listener, CommandExecutor {
                 sendHoverText(p,"§d§l[一つ購入する]","","man10shop buyusershop ${shop.first} false")
                 sendHoverText(p,"§d§l[スタックで購入する]","","man10shop buyusershop ${shop.first} true")
             }else{
-                sendHoverText(p,"§b§l[一つ売る]","","man10shop sellusershop ${shop.first} false")
-                sendHoverText(p,"§b§l[スタックで売る]","","man10shop sellusershop ${shop.first} true")
+                sendHoverText(p,"§b§l[一つ売却する]","","man10shop sellusershop ${shop.first} false")
+                sendHoverText(p,"§b§l[スタックで売却する]","","man10shop sellusershop ${shop.first} true")
                 sendHoverText(p,"§b§l[売れるだけ売る]","","man10shop sellusershop ${shop.first} all")
             }
             p.sendMessage("§a==========================================")
-
-//            if (UserShop.tradeItem(shop.first,p, p.isSneaking)){
-//                sendMsg(p,"§a§l取引成功！")
-//            }else{
-//                sendMsg(p,"§c§l取引失敗！")
-//            }
 
             return
         }
