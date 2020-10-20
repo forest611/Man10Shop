@@ -27,6 +27,7 @@ import red.man10.man10shop.Man10Shop.Companion.cost
 import red.man10.man10shop.Man10Shop.Companion.enableWorld
 import red.man10.man10shop.Man10Shop.Companion.maxPrice
 import red.man10.man10shop.Man10Shop.Companion.pluginEnable
+import red.man10.man10shop.Man10Shop.Companion.sendHoverText
 import red.man10.man10shop.Man10Shop.Companion.sendMsg
 import red.man10.man10shop.Man10Shop.Companion.sendOP
 import red.man10.man10shop.Man10Shop.Companion.vault
@@ -130,30 +131,30 @@ object ShopEvent : Listener, CommandExecutor {
         if (e.action == Action.RIGHT_CLICK_BLOCK){
 
             //自分のショップだった場合リターン
-            if (shop.second.ownerUUId == p.uniqueId){
-                val item = p.inventory.itemInMainHand
-
-                if (item.hasItemMeta() && item.itemMeta.displayName.indexOf("§a§lman10shop") == 0){
-
-                    val lore = item.lore!!
-
-                    UserShop.updateShop(shop.first,p,lore[1].toDouble(), lore[0] == "b")
-
-                    sign.setLine(0, USERSHOP)
-                    sign.setLine(1,"§b§l${p.name}")
-                    sign.setLine(2,"${if (lore[0] == "b") "§d§lB" else "§b§lS"}§e§l${lore[1].toDouble()}")
-                    sign.setLine(3,lore[2].replace("&","§"))
-
-                    sign.update()
-                    p.inventory.removeItem(item)
-                    sendMsg(p,"§a§lショップをアップデートしました")
-                    return
-
-                }
-                sendMsg(p,"§c§lこれは自分のショップです！")
-
-                return
-            }
+//            if (shop.second.ownerUUId == p.uniqueId){
+//                val item = p.inventory.itemInMainHand
+//
+//                if (item.hasItemMeta() && item.itemMeta.displayName.indexOf("§a§lman10shop") == 0){
+//
+//                    val lore = item.lore!!
+//
+//                    UserShop.updateShop(shop.first,p,lore[1].toDouble(), lore[0] == "b")
+//
+//                    sign.setLine(0, USERSHOP)
+//                    sign.setLine(1,"§b§l${p.name}")
+//                    sign.setLine(2,"${if (lore[0] == "b") "§d§lB" else "§b§lS"}§e§l${lore[1].toDouble()}")
+//                    sign.setLine(3,lore[2].replace("&","§"))
+//
+//                    sign.update()
+//                    p.inventory.removeItem(item)
+//                    sendMsg(p,"§a§lショップをアップデートしました")
+//                    return
+//
+//                }
+//                sendMsg(p,"§c§lこれは自分のショップです！")
+//
+//                return
+//            }
 
             //ショップが編集中だった場合
             if (isEdit.contains(shop.first)){
@@ -168,30 +169,50 @@ object ShopEvent : Listener, CommandExecutor {
             }
 
             //ショップの確認
-            if (checkMap[p] ==null || checkMap[p] != shop.first){
+//            if (checkMap[p] ==null || checkMap[p] != shop.first){
+//
+//
+//                val item = shop.second.container[shop.second.container.size-1]
+//
+//                val name = if (!item.hasItemMeta()) item.i18NDisplayName!! else item.itemMeta.displayName
+//
+//                val lore = if (item.hasItemMeta()&& item.itemMeta.lore != null) item.itemMeta.lore!![0] else "説明無し"
+//
+//                sendMsg(p,"§e§k§lXXXX§r${if (shop.second.isBuy) "§d§l購入確認" else "§b§l売却確認"}§e§k§lXXXX")
+//                sendMsg(p,name)
+//                sendMsg(p,lore)
+//
+//                checkMap[p] = shop.first
+//                return
+//            }
+//
+//            checkMap.remove(p)
 
+            val item = shop.second.container[shop.second.container.size-1]
 
-                val item = shop.second.container[shop.second.container.size-1]
+            val name = if (!item.hasItemMeta()) item.i18NDisplayName!! else item.itemMeta.displayName
 
-                val name = if (!item.hasItemMeta()) item.i18NDisplayName!! else item.itemMeta.displayName
+            val lore = if (item.hasItemMeta()&& item.itemMeta.lore != null) item.itemMeta.lore!![0] else "説明無し"
 
-                val lore = if (item.hasItemMeta()&& item.itemMeta.lore != null) item.itemMeta.lore!![0] else "説明無し"
-
-                sendMsg(p,"§e§k§lXXXX§r${if (shop.second.isBuy) "§d§l購入確認" else "§b§l売却確認"}§e§k§lXXXX")
-                sendMsg(p,name)
-                sendMsg(p,lore)
-
-                checkMap[p] = shop.first
-                return
-            }
-
-            checkMap.remove(p)
-
-            if (UserShop.tradeItem(shop.first,p, p.isSneaking)){
-                sendMsg(p,"§a§l取引成功！")
+            p.sendMessage("§a==========================================")
+            p.sendMessage("§bアイテム名:§f$name")
+            p.sendMessage("§b説明:§f$lore")
+            p.sendMessage("§e値段:${String.format("%,.1f",shop.second.price)}")
+            if (shop.second.isBuy){
+                sendHoverText(p,"§d§l[一つ購入する]","","man10shop buyusershop ${shop.first} false")
+                sendHoverText(p,"§d§l[スタックで購入する]","","man10shop buyusershop ${shop.first} true")
             }else{
-                sendMsg(p,"§c§l取引失敗！")
+                sendHoverText(p,"§b§l[一つ売る]","","man10shop sellusershop ${shop.first} false")
+                sendHoverText(p,"§b§l[スタックで売る]","","man10shop sellusershop ${shop.first} true")
+                sendHoverText(p,"§b§l[売れるだけ売る]","","man10shop sellusershop ${shop.first} all")
             }
+            p.sendMessage("§a==========================================")
+
+//            if (UserShop.tradeItem(shop.first,p, p.isSneaking)){
+//                sendMsg(p,"§a§l取引成功！")
+//            }else{
+//                sendMsg(p,"§c§l取引失敗！")
+//            }
 
             return
         }

@@ -222,82 +222,41 @@ object UserShop {
 
     }
 
-    /**
-     * アイテムを購入、買取する
-     *
-     * @return 取引成功したら true 失敗したら false
-     */
-    fun tradeItem(id:Int,p:Player,stack:Boolean):Boolean{
+
+    fun buy(id:Int,p:Player,stack: Boolean):Boolean{
 
         val data = get(id)
 
-        if(data.container.isEmpty())return false
+        if (p.inventory.firstEmpty() == -1){
+            sendMsg(p,"§cインベントリに空きがない可能性があります")
 
-        ///////////////購入//////////////////
-        if (data.isBuy) {
+            return false
+        }
 
-            if (!p.inventory.contains(Material.AIR)){
-                sendMsg(p,"§cインベントリに空きがない可能性があります")
+        val container = data.container
+        val item = container[container.size-1]
 
-                return false
-            }
+        if (container.isEmpty()) return false
+        if (container[0].type == Material.AIR)return false
 
-            val container = data.container
-            val item = container[container.size-1]
+        //まとめて取引する場合
+        if (stack) {
 
-            if (container.isEmpty()) return false
-            if (container[0].type == Material.AIR)return false
+            val price = data.price * item.amount
 
-            //まとめて取引する場合
-            if (stack) {
-
-                val price = data.price * item.amount
-
-                if (vault.getBalance(p.uniqueId) < price) {
-                    sendMsg(p,"§cお金が足りません！")
-                    return false
-                }
-
-                vault.withdraw(p.uniqueId, price)
-
-                //オーナーにお金を送金
-                bank.deposit(data.ownerUUId,price, "ShopProfit")
-
-                p.inventory.addItem(item.clone())
-
-                container.remove(item)
-
-                data.container = container
-
-                set(id, data)
-
-                updateShop(id,p,container)
-
-                Database.logNormal(p, "BuyItem x ${item.amount} ID:$id", price)
-                return true
-            }
-
-            //一つだけの場合
-            if (vault.getBalance(p.uniqueId) < data.price){
+            if (vault.getBalance(p.uniqueId) < price) {
                 sendMsg(p,"§cお金が足りません！")
                 return false
             }
 
-            vault.withdraw(p.uniqueId, data.price)
+            vault.withdraw(p.uniqueId, price)
 
-            bank.deposit(data.ownerUUId,data.price, "ShopProfit")
+            //オーナーにお金を送金
+            bank.deposit(data.ownerUUId,price, "ShopProfit")
 
-            val pItem = item.clone()
+            p.inventory.addItem(item.clone())
 
-            pItem.amount = 1
-
-            item.amount--
-
-            if (item.amount == 0){
-                container.removeAt(container.size-1)
-            }else{
-                container[container.size-1] = item
-            }
+            container.remove(item)
 
             data.container = container
 
@@ -305,15 +264,49 @@ object UserShop {
 
             updateShop(id,p,container)
 
-            p.inventory.addItem(pItem)
-
-            Database.logNormal(p, "BuyItem x 1 ID:$id", data.price)
-
+            Database.logNormal(p, "BuyItem x ${item.amount} ID:$id", price)
             return true
-
         }
 
-        ///////////買取/////////////////
+        //一つだけの場合
+        if (vault.getBalance(p.uniqueId) < data.price){
+            sendMsg(p,"§cお金が足りません！")
+            return false
+        }
+
+        vault.withdraw(p.uniqueId, data.price)
+
+        bank.deposit(data.ownerUUId,data.price, "ShopProfit")
+
+        val pItem = item.clone()
+
+        pItem.amount = 1
+
+        item.amount--
+
+        if (item.amount == 0){
+            container.removeAt(container.size-1)
+        }else{
+            container[container.size-1] = item
+        }
+
+        data.container = container
+
+        set(id, data)
+
+        updateShop(id,p,container)
+
+        p.inventory.addItem(pItem)
+
+        Database.logNormal(p, "BuyItem x 1 ID:$id", data.price)
+
+        return true
+
+    }
+
+    fun sell(id:Int,p:Player,stack: Boolean):Boolean{
+
+        val data = get(id)
 
         if (data.container.size >=54&&data.container[53].amount >= data.container[53].maxStackSize){
             sendMsg(p,"§c§lショップのコンテナが満タンの可能性があります")
@@ -333,7 +326,7 @@ object UserShop {
 
                 if (item == null)continue
 
-                if (!equeal(item,sellItem))continue
+                if (!sellItem.isSimilar(item))continue
 
                 val price = item.amount * data.price
 
@@ -367,7 +360,7 @@ object UserShop {
 
             if (item == null)continue
 
-            if (!equeal(item,sellItem))continue
+            if (!sellItem.isSimilar(item))continue
 
             val pItem = item.clone()
             pItem.amount = 1
@@ -394,22 +387,67 @@ object UserShop {
         }
 
         return false
+
     }
 
-    /**
-     * ２つのItemStackが同じものかを識別する
-     */
-    fun equeal(itemA:ItemStack,itemB:ItemStack):Boolean{
+    fun sellAll(id:Int,p:Player):Boolean{
 
-        val anItemA = itemA.clone()
-        anItemA.amount = 1
+        val data = get(id)
 
-        val anItemB = itemB.clone()
-        anItemB.amount = 1
+        if (data.container.size >=54){
+            sendMsg(p,"§c§lショップのコンテナが満タンの可能性があります")
+            return false
+        }
 
-        if (anItemA.toString() == anItemB.toString())return true
+        val inv = p.inventory
 
-        return false
+        val sellItem = data.container[0]
+
+        if (sellItem.type == Material.AIR)return false
+
+        var totalPrice = 0.0
+
+        //スタックで買い取ってもらう
+        for (item in inv){
+
+            if (item == null)continue
+
+            if (!sellItem.isSimilar(item))continue
+
+            val price = item.amount * data.price
+
+            //ショップオーナーからお金を引き出す
+            if (!bank.withdraw(data.ownerUUId,price,"ShopPurchase")){
+                sendMsg(p,"§cショップのオーナーのお金がなくなったようです！")
+                return false
+            }
+
+            if (data.container.size >=54){
+                sendMsg(p,"§c§lショップのコンテナが満タンになりました！")
+                return true
+            }
+
+            Database.logNormal(p, "SellItem x ${item.amount} ID:$id", price)
+
+//                p.inventory.removeItem(item)
+
+            val containerItem = item.clone()
+            item.amount = 0
+
+            data.container.add(containerItem)
+
+            updateShop(id,p,data.container)
+
+            totalPrice += price
+        }
+
+        if (totalPrice == 0.0){
+            return false
+        }
+
+        bank.deposit(p.uniqueId,totalPrice,"ShopProfit")
+
+        return true
 
     }
 

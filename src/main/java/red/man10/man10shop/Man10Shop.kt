@@ -14,6 +14,7 @@ import red.man10.man10shop.merchant.MerchantShop
 import red.man10.man10shop.merchant.MerchantShop.MerchantShopData
 import red.man10.man10shop.merchant.ShopEvent
 import red.man10.man10shop.usershop.UserShop
+import java.lang.Exception
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.LinkedBlockingQueue
 
@@ -185,6 +186,52 @@ class Man10Shop : JavaPlugin(){
                 sendMsg(sender, "コンフィグのリロード完了！")
 
             }.start()
+
+        }
+
+        if (cmd == "buyusershop"){//man10shop buyusershop <id> <is stack>
+
+            try {
+
+                if (UserShop.buy(args[1].toInt(),sender,args[2].toBoolean())){
+                    sendMsg(sender,"§a取引成功")
+                }else{
+                    sendMsg(sender,"§c取引失敗")
+                }
+
+            }catch (e:Exception){
+                sendMsg(sender,"§c§lERROR:${e.message}")
+            }
+
+            return true
+
+        }
+
+        if (cmd == "sellusershop"){
+
+            try {
+
+                if (args[2] == "all"){
+                    if (UserShop.sellAll(args[1].toInt(),sender)){
+                        sendMsg(sender,"§a取引成功")
+                        return true
+                    }
+                    sendMsg(sender,"§c取引失敗")
+                    return true
+                }
+
+
+                if (UserShop.sell(args[1].toInt(),sender,args[2].toBoolean())){
+                    sendMsg(sender,"§a取引成功")
+                }else{
+                    sendMsg(sender,"§c取引失敗")
+                }
+
+            }catch (e:Exception){
+                sendMsg(sender,"§c§lERROR:${e.message}")
+            }
+
+            return true
 
         }
 
