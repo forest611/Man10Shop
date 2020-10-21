@@ -130,30 +130,30 @@ object ShopEvent : Listener, CommandExecutor {
         if (e.action == Action.RIGHT_CLICK_BLOCK){
 
             //自分のショップだった場合リターン
-//            if (shop.second.ownerUUId == p.uniqueId){
-//                val item = p.inventory.itemInMainHand
-//
-//                if (item.hasItemMeta() && item.itemMeta.displayName.indexOf("§a§lman10shop") == 0){
-//
-//                    val lore = item.lore!!
-//
-//                    UserShop.updateShop(shop.first,p,lore[1].toDouble(), lore[0] == "b")
-//
-//                    sign.setLine(0, USERSHOP)
-//                    sign.setLine(1,"§b§l${p.name}")
-//                    sign.setLine(2,"${if (lore[0] == "b") "§d§lB" else "§b§lS"}§e§l${lore[1].toDouble()}")
-//                    sign.setLine(3,lore[2].replace("&","§"))
-//
-//                    sign.update()
-//                    p.inventory.removeItem(item)
-//                    sendMsg(p,"§a§lショップをアップデートしました")
-//                    return
-//
-//                }
-//                sendMsg(p,"§c§lこれは自分のショップです！")
-//
-//                return
-//            }
+            if (shop.second.ownerUUId == p.uniqueId){
+                val item = p.inventory.itemInMainHand
+
+                if (item.hasItemMeta() && item.itemMeta.displayName.indexOf("§a§lman10shop") == 0){
+
+                    val lore = item.lore!!
+
+                    UserShop.updateShop(shop.first,p,lore[1].toDouble(), lore[0] == "b")
+
+                    sign.setLine(0, USERSHOP)
+                    sign.setLine(1,"§b§l${p.name}")
+                    sign.setLine(2,"${if (lore[0] == "b") "§d§lB" else "§b§lS"}§e§l${lore[1].toDouble()}")
+                    sign.setLine(3,lore[2].replace("&","§"))
+
+                    sign.update()
+                    p.inventory.removeItem(item)
+                    sendMsg(p,"§a§lショップをアップデートしました")
+                    return
+
+                }
+                sendMsg(p,"§c§lこれは自分のショップです！")
+
+                return
+            }
 
             //ショップが編集中だった場合
             if (isEdit.contains(shop.first)){
