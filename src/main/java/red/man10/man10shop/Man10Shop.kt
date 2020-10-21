@@ -122,6 +122,8 @@ class Man10Shop : JavaPlugin(){
 
             if (!sender.hasPermission(USER))return false
 
+            if (!pluginEnable)return false
+
             if (cmd == "buyusershop"){//man10shop buyusershop <id> <is stack>
 
                 try {
