@@ -126,7 +126,15 @@ class Man10Shop : JavaPlugin(){
 
                 try {
 
-                    if (UserShop.buy(args[1].toInt(),sender,args[2].toBoolean())){
+                    val id = args[1].toInt()
+
+                    //ショップが編集中だった場合
+                    if (red.man10.man10shop.usershop.ShopEvent.isEdit.contains(id)){
+                        sendMsg(sender,"§c§l現在ショップの編集中です！")
+                        return false
+                    }
+
+                    if (UserShop.buy(id,sender,args[2].toBoolean())){
                         sendMsg(sender,"§a取引成功")
                     }else{
                         sendMsg(sender,"§c取引失敗")
@@ -145,6 +153,12 @@ class Man10Shop : JavaPlugin(){
                 try {
 
                     val id = args[1].toInt()
+
+                    //ショップが編集中だった場合
+                    if (red.man10.man10shop.usershop.ShopEvent.isEdit.contains(id)){
+                        sendMsg(sender,"§c§l現在ショップの編集中です！")
+                        return false
+                    }
 
                     GlobalScope.launch {
                         if (args[2] == "all"){

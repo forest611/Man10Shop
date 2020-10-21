@@ -155,12 +155,6 @@ object ShopEvent : Listener, CommandExecutor {
                 return
             }
 
-            //ショップが編集中だった場合
-            if (isEdit.contains(shop.first)){
-                sendMsg(p,"§c§l現在ショップの編集中です！")
-                return
-            }
-
             //ショップが空だった場合
             if (shop.second.container.isEmpty()){
                 sendMsg(p,"§c§lショップの在庫、もしくは買取アイテムの設定がされていないようです")
