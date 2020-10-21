@@ -16,3 +16,5 @@ commands:
     default: op
   shop:
     default: op
+  usershop:
+    default: op

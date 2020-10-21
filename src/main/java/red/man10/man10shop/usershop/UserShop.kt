@@ -158,7 +158,7 @@ object UserShop {
      */
     fun updateShop(id:Int,p:Player, container:MutableList<ItemStack>){
 
-        val data = userShop[id]?:return
+//        val data = userShop[id]?:return
 
         mysqlQueue.add("UPDATE user_shop_list t SET " +
                 "t.shop_container = '${Database.itemStackArrayToBase64(container.toTypedArray())}' " +

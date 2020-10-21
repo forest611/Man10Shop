@@ -114,6 +114,79 @@ class Man10Shop : JavaPlugin(){
 
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
 
+        if (label=="usershop"){
+
+            val cmd = args[0]
+
+            if (sender !is Player)return false
+
+            if (!sender.hasPermission(USER))return false
+
+            if (cmd == "buyusershop"){//man10shop buyusershop <id> <is stack>
+
+                try {
+
+                    if (UserShop.buy(args[1].toInt(),sender,args[2].toBoolean())){
+                        sendMsg(sender,"§a取引成功")
+                    }else{
+                        sendMsg(sender,"§c取引失敗")
+                    }
+
+                }catch (e:Exception){
+                    sendMsg(sender,"§c§lERROR:${e.message}")
+                }
+
+                return true
+
+            }
+
+            if (cmd == "sellusershop"){
+
+                try {
+
+                    val id = args[1].toInt()
+
+                    GlobalScope.launch {
+                        if (args[2] == "all"){
+
+                            if (checkMap[sender]==null || checkMap[sender]!=id ){
+
+                                sendMsg(sender,"§a本当にすべて売却しますか？")
+                                sendHoverText(sender,"§c§l[売っちゃう！]","","man10shop sellusershop $id all")
+                                checkMap[sender] = id
+                                return@launch
+                            }
+
+                            checkMap.remove(sender)
+
+                            if (UserShop.sellAll(id,sender)){
+                                sendMsg(sender,"§a取引成功")
+                                return@launch
+                            }
+                            sendMsg(sender,"§c取引失敗")
+                            return@launch
+                        }
+
+                        if (UserShop.sell(id,sender,args[2].toBoolean())){
+                            sendMsg(sender,"§a取引成功")
+                        }else{
+                            sendMsg(sender,"§c取引失敗")
+                        }
+                    }
+                    return true
+
+
+                }catch (e:Exception){
+                    sendMsg(sender,"§c§lERROR:${e.message}")
+                }
+
+                return true
+
+            }
+
+            return true
+        }
+
         if (label!="man10shop")return false
 
         if (!sender.hasPermission(OP))return false
@@ -190,68 +263,6 @@ class Man10Shop : JavaPlugin(){
                 sendMsg(sender, "コンフィグのリロード完了！")
 
             }.start()
-
-        }
-
-        if (cmd == "buyusershop"){//man10shop buyusershop <id> <is stack>
-
-            try {
-
-                if (UserShop.buy(args[1].toInt(),sender,args[2].toBoolean())){
-                    sendMsg(sender,"§a取引成功")
-                }else{
-                    sendMsg(sender,"§c取引失敗")
-                }
-
-            }catch (e:Exception){
-                sendMsg(sender,"§c§lERROR:${e.message}")
-            }
-
-            return true
-
-        }
-
-        if (cmd == "sellusershop"){
-
-            try {
-
-                val id = args[1].toInt()
-
-                GlobalScope.launch {
-                    if (args[2] == "all"){
-
-                        if (checkMap[sender]==null || checkMap[sender]!=id ){
-
-                            sendMsg(sender,"§a本当にすべて売却しますか？")
-                            sendHoverText(sender,"§c§l[売っちゃう！]","","man10shop sellusershop $id all")
-                            checkMap[sender] = id
-                            return@launch
-                        }
-
-                        checkMap.remove(sender)
-
-                        if (UserShop.sellAll(id,sender)){
-                            sendMsg(sender,"§a取引成功")
-                            return@launch
-                        }
-                        sendMsg(sender,"§c取引失敗")
-                        return@launch
-                    }
-
-                    if (UserShop.sell(id,sender,args[2].toBoolean())){
-                        sendMsg(sender,"§a取引成功")
-                    }else{
-                        sendMsg(sender,"§c取引失敗")
-                    }
-                }
-                return true
-
-
-            }catch (e:Exception){
-                sendMsg(sender,"§c§lERROR:${e.message}")
-            }
-
-            return true
 
         }
 
