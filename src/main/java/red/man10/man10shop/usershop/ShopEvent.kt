@@ -266,11 +266,6 @@ object ShopEvent : Listener, CommandExecutor {
 
         if (sender !is Player)return true
 
-        if (args.isEmpty()){
-            sendMsg(sender,"§d§l/editshop <b/s> <Price/値段> <看板に表示するメッセージ>")
-            return true
-        }
-
         //editshop type price text
         if (args.size == 3){
 
@@ -308,8 +303,11 @@ object ShopEvent : Listener, CommandExecutor {
             paper.itemMeta = meta
 
             sender.inventory.addItem(paper)
+
+            return true
         }
 
+        sendMsg(sender,"§d§l/editshop <b/s> <Price/値段> <看板に表示するメッセージ>")
         return true
 
     }
