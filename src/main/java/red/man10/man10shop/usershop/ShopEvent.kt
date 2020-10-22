@@ -172,12 +172,12 @@ object ShopEvent : Listener, CommandExecutor {
             p.sendMessage("§b説明:§f$lore")
             p.sendMessage("§e値段:${String.format("%,.1f",shop.second.price)}")
             if (shop.second.isBuy){
-                sendHoverText(p,"§d§l[一つ購入する]","","usershop buyusershop ${shop.first} false")
                 sendHoverText(p,"§d§l[スタックで購入する]","","usershop buyusershop ${shop.first} true")
+                sendHoverText(p,"§d§l[一つ購入する]","","usershop buyusershop ${shop.first} false")
             }else{
-                sendHoverText(p,"§b§l[一つ売却する]","","usershop sellusershop ${shop.first} false")
-                sendHoverText(p,"§b§l[スタックで売却する]","","usershop sellusershop ${shop.first} true")
                 sendHoverText(p,"§b§l[売れるだけ売る]","","usershop sellusershop ${shop.first} all")
+                sendHoverText(p,"§b§l[スタックで売却する]","","usershop sellusershop ${shop.first} true")
+                sendHoverText(p,"§b§l[一つ売却する]","","usershop sellusershop ${shop.first} false")
             }
             p.sendMessage("§a==========================================")
 

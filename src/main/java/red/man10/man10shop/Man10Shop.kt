@@ -168,7 +168,7 @@ class Man10Shop : JavaPlugin(){
                             if (checkMap[sender]==null || checkMap[sender]!=id ){
 
                                 sendMsg(sender,"§a本当にすべて売却しますか？")
-                                sendHoverText(sender,"§c§l[売っちゃう！]","","man10shop sellusershop $id all")
+                                sendHoverText(sender,"§c§l[売っちゃう！]","","usershop sellusershop $id all")
                                 checkMap[sender] = id
                                 return@launch
                             }
