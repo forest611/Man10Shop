@@ -155,13 +155,12 @@ object ShopEvent : Listener, CommandExecutor {
                 return
             }
 
-            //ショップが空だった場合
-            if (shop.second.container.isEmpty()){
+            val item = UserShop.getTradeItem(shop.first)
+
+            if (item==null){
                 sendMsg(p,"§c§lショップの在庫、もしくは買取アイテムの設定がされていないようです")
                 return
             }
-
-            val item = shop.second.container[shop.second.container.size-1]
 
             val name = if (!item.hasItemMeta()) item.i18NDisplayName!! else item.itemMeta.displayName
 
@@ -223,7 +222,7 @@ object ShopEvent : Listener, CommandExecutor {
             return
         }
 
-        if (UserShop.get(pair.first).container.isNotEmpty()){
+        if (!UserShop.get(pair.first).container.isEmpty){
             if (p.hasPermission(OP) && breakMode[p] != null && breakMode[p]!!){
 
                 UserShop.deleteShop(pair.first,p)
