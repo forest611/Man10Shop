@@ -430,8 +430,6 @@ object UserShop {
 
             if (!sellItem.isSimilar(item))continue
 
-            totalItem += item.amount
-
             val price = item.amount * data.price
 
             //ショップオーナーからお金を引き出す
@@ -457,6 +455,7 @@ object UserShop {
             updateShop(id,p,data.container)
 
             totalPrice += price
+            totalItem += containerItem.amount
         }
 
         if (totalPrice == 0.0){
