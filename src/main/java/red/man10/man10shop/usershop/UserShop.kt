@@ -313,10 +313,10 @@ object UserShop {
 
         val data = get(id)
 
-        if (data.container.firstEmpty() == -1){
-            sendMsg(p,"§c§lショップのコンテナが満タンの可能性があります")
-            return false
-        }
+//        if (data.container.firstEmpty() == -1){
+//            sendMsg(p,"§c§lショップのコンテナが満タンの可能性があります")
+//            return false
+//        }
 
         val inv = p.inventory
 
@@ -326,6 +326,11 @@ object UserShop {
 
         //スタックで買い取ってもらう
         if (stack){
+
+            if (data.container.firstEmpty() == -1){
+                sendMsg(p,"§c§lショップのコンテナが満タンの可能性があります")
+                return false
+            }
 
             for (item in inv){
 
@@ -358,6 +363,11 @@ object UserShop {
 
             return false
 
+        }
+
+        if (data.container.last().amount>=data.container.last().maxStackSize){
+            sendMsg(p,"§c§lショップのコンテナが満タンの可能性があります")
+            return false
         }
 
         //一つのアイテム
@@ -411,6 +421,7 @@ object UserShop {
         if (sellItem.type == Material.AIR)return false
 
         var totalPrice = 0.0
+        var totalItem = 0
 
         //スタックで買い取ってもらう
         for (item in inv){
@@ -418,6 +429,8 @@ object UserShop {
             if (item == null)continue
 
             if (!sellItem.isSimilar(item))continue
+
+            totalItem += item.amount
 
             val price = item.amount * data.price
 
@@ -451,6 +464,8 @@ object UserShop {
         }
 
         bank.deposit(p.uniqueId,totalPrice,"ShopProfit")
+        p.sendMessage("§e売った数:$totalItem")
+        p.sendMessage("§e入金額:$totalPrice")
 
         return true
 

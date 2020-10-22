@@ -136,10 +136,13 @@ class Man10Shop : JavaPlugin(){
                         return false
                     }
 
-                    if (UserShop.buy(id,sender,args[2].toBoolean())){
-                        sendMsg(sender,"§a取引成功")
-                    }else{
-                        sendMsg(sender,"§c取引失敗")
+                    GlobalScope.launch {
+                        if (UserShop.buy(id,sender,args[2].toBoolean())){
+                            sendMsg(sender,"§a取引成功")
+                        }else{
+                            sendMsg(sender,"§c取引失敗")
+                        }
+
                     }
 
                 }catch (e:Exception){
