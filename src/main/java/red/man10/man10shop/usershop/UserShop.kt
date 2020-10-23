@@ -428,14 +428,14 @@ object UserShop {
 
             val price = item.amount * data.price
 
-            //ショップオーナーからお金を引き出す
-            if (!bank.withdraw(data.ownerUUId,price,"ShopPurchase")){
-                sendMsg(p,"§cショップのオーナーのお金がなくなったようです！")
+            if (data.container.firstEmpty() == -1){
+                sendMsg(p,"§c§lショップのコンテナが満タンになりました！")
                 break
             }
 
-            if (data.container.firstEmpty() == -1){
-                sendMsg(p,"§c§lショップのコンテナが満タンになりました！")
+            //ショップオーナーからお金を引き出す
+            if (!bank.withdraw(data.ownerUUId,price,"ShopPurchase")){
+                sendMsg(p,"§cショップのオーナーのお金がなくなったようです！")
                 break
             }
 
