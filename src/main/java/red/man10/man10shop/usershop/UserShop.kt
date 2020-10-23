@@ -53,11 +53,7 @@ object UserShop {
 
             userShop[id] = data
 
-            if (rs.getString("shop_container") == "null"){
-                containerInventory(id,null)
-            }else{
-                containerInventory(id,Database.itemStackArrayFromBase64(rs.getString("shop_container")))
-            }
+            containerInventory(id,Database.itemStackArrayFromBase64(rs.getString("shop_container")))
 
 //            Bukkit.getLogger().info("Loaded user shop ID:$id")
 
@@ -122,6 +118,8 @@ object UserShop {
 
         userShop[id] = data
 
+        containerInventory(id,null)
+
         Database.logNormal(p,"CreateNewShop (${if (isBuy) "buy" else "sell"})",price)
 
 
@@ -159,12 +157,12 @@ object UserShop {
 
     }
 
-    /**
-     * ショップのコンテナのみをアップデート
-     *
-     * @param id shop id
-     * @param container shop container
-     */
+//    /**
+//     * ショップのコンテナのみをアップデート
+//     *
+//     * @param id shop id
+//     * @param container shop container
+//     */
 //    fun updateShop(id:Int,p:Player, container:MutableList<ItemStack>){
 //
 ////        val data = userShop[id]?:return
@@ -490,6 +488,7 @@ object UserShop {
 
         if (list == null){
             set(id,data)
+            updateShop(id,Bukkit.getPlayer(data.ownerUUId)!!,data.container)
             return
         }
 
