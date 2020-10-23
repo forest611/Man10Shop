@@ -133,8 +133,6 @@ object UserShop {
      */
     fun updateShop(id:Int,p:Player, container:Inventory){
 
-        val data = userShop[id]?:return
-
         val list = mutableListOf<ItemStack>()
 
         for (i in 0..53){
@@ -330,7 +328,7 @@ object UserShop {
                 return false
             }
 
-            for (item in inv){
+            for (item in inv.contents){
 
                 if (item == null)continue
 
@@ -422,7 +420,7 @@ object UserShop {
         var totalItem = 0
 
         //スタックで買い取ってもらう
-        for (item in inv){
+        for (item in inv.contents){
 
             if (item == null)continue
 
