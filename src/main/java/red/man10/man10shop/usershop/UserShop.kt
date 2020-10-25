@@ -257,7 +257,8 @@ object UserShop {
 
             p.inventory.addItem(item.clone())
 
-            container.remove(item)
+//            container.remove(item)
+            container.removeItem(item)
 
             data.container = container
 
