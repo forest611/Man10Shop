@@ -362,9 +362,12 @@ object UserShop {
 
         }
 
-        if (data.container.last().amount>=data.container.last().maxStackSize){
+        val last = data.container.last()
+
+        if (last !=null && last.amount >=last.maxStackSize){
             sendMsg(p,"§c§lショップのコンテナが満タンの可能性があります")
             return false
+
         }
 
         //一つのアイテム
