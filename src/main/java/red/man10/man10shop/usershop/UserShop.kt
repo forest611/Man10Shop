@@ -452,11 +452,11 @@ object UserShop {
 
             data.container.addItem(containerItem)
 
-            updateShop(id,p,data.container)
-
             totalPrice += price
             totalItem += containerItem.amount
         }
+
+        updateShop(id,p,data.container)
 
         if (totalPrice == 0.0){
             return false
