@@ -150,9 +150,11 @@ object ShopEvent : Listener, CommandExecutor {
                     return
 
                 }
-                sendMsg(p,"§c§lこれは自分のショップです！")
 
-                return
+                if (!p.isOp){
+                    sendMsg(p,"§c§lこれは自分のショップです！")
+                    return
+                }
             }
 
             val item = UserShop.getTradeItem(shop.first)
