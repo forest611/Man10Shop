@@ -18,8 +18,8 @@ import java.util.concurrent.ConcurrentHashMap
 
 object UserShop {
 
-    private val userShop = ConcurrentHashMap<Int,UserShopData>()
-    private var mysql : MySQLManager = MySQLManager(pl,"man10Shop")
+    private val userShop = ConcurrentHashMap<Int, UserShopData>()
+    private var mysql : MySQLManager = MySQLManager(pl, "man10Shop")
 
     const val CONTAINER_NAME = "§6§lショップコンテナ"
 
@@ -30,7 +30,7 @@ object UserShop {
 
         userShop.clear()
 
-        val mysql = MySQLManager(pl,"Man10ShopLoad")
+        val mysql = MySQLManager(pl, "Man10ShopLoad")
 
         val rs = mysql.query("SELECT * FROM user_shop_list;")?:return
 
@@ -45,7 +45,7 @@ object UserShop {
             data.server = rs.getString("server")
             data.world = rs.getString("world")
 
-            data.loc = Triple(rs.getInt("locX"),rs.getInt("locY"),rs.getInt("locZ"))
+            data.loc = Triple(rs.getInt("locX"), rs.getInt("locY"), rs.getInt("locZ"))
 
             data.isBuy = rs.getInt("buy")==1
 
@@ -53,7 +53,7 @@ object UserShop {
 
             userShop[id] = data
 
-            containerInventory(id,Database.itemStackArrayFromBase64(rs.getString("shop_container")))
+            containerInventory(id, Database.itemStackArrayFromBase64(rs.getString("shop_container")))
 
 //            Bukkit.getLogger().info("Loaded user shop ID:$id")
 
@@ -74,7 +74,7 @@ object UserShop {
      *
      */
     @Synchronized
-    fun create(p: Player,location: Location,price:Double,isBuy:Boolean){
+    fun create(p: Player, location: Location, price: Double, isBuy: Boolean){
 
 
         val data = UserShopData()
@@ -84,7 +84,7 @@ object UserShop {
         data.server = p.server.name
         data.world = location.world.name
 
-        data.loc = Triple(location.blockX,location.blockY,location.blockZ)
+        data.loc = Triple(location.blockX, location.blockY, location.blockZ)
 
         data.isBuy = isBuy
 
@@ -118,9 +118,9 @@ object UserShop {
 
         userShop[id] = data
 
-        containerInventory(id,null)
+        containerInventory(id, null)
 
-        Database.logNormal(p,"CreateNewShop (${if (isBuy) "buy" else "sell"})",price)
+        Database.logNormal(p, "CreateNewShop (${if (isBuy) "buy" else "sell"})", price)
 
 
     }
@@ -131,7 +131,7 @@ object UserShop {
      * @param id shop id
      * @param container shop container
      */
-    fun updateShop(id:Int,p:Player, container:Inventory){
+    fun updateShop(id: Int, p: Player, container: Inventory){
 
         val list = mutableListOf<ItemStack>()
 
@@ -143,7 +143,7 @@ object UserShop {
 
 //        data.container.storageContents= list.toTypedArray()
 
-        containerInventory(id,list)
+        containerInventory(id, list)
 
 //        set(id,data)
 
@@ -151,7 +151,7 @@ object UserShop {
                 "t.shop_container = '${Database.itemStackArrayToBase64(list.toTypedArray())}' " +
                 "WHERE t.id = $id;")
 
-        Database.logNormal(p,"UpdateShop ID:$id",0.0)
+        Database.logNormal(p, "UpdateShop ID:$id", 0.0)
 
     }
 
@@ -172,30 +172,30 @@ object UserShop {
 //        Database.logNormal(p,"UpdateShop ID:$id",0.0)
 //
 //    }
-    fun updateShop(id:Int,p:Player,price: Double,isBuy: Boolean){
+    fun updateShop(id: Int, p: Player, price: Double, isBuy: Boolean){
 
         val data = userShop[id]?:return
 
         data.isBuy = isBuy
         data.price = price
 
-        set(id,data)
+        set(id, data)
 
         mysqlQueue.add("UPDATE user_shop_list t SET t.buy = ${if (isBuy) 1 else 0}, t.price = $price WHERE t.id = $id")
 
-        Database.logNormal(p,"UpdateShop ID:$id",price)
+        Database.logNormal(p, "UpdateShop ID:$id", price)
     }
 
     /**
      * ショップの削除
      */
-    fun deleteShop(id:Int,p:Player){
+    fun deleteShop(id: Int, p: Player){
 
         userShop.remove(id)
 
         mysqlQueue.add("DELETE FROM user_shop_list WHERE id = $id;")
 
-        Database.logNormal(p,"DeleteShop ID:$id",0.0)
+        Database.logNormal(p, "DeleteShop ID:$id", 0.0)
     }
 
     /**
@@ -203,7 +203,7 @@ object UserShop {
      *
      * @return id ショップのデータ
      */
-    fun getShop(location: Location,server:String): Pair<Int, UserShopData>? {
+    fun getShop(location: Location, server: String): Pair<Int, UserShopData>? {
 
         for (data in userShop){
 
@@ -216,7 +216,7 @@ object UserShop {
             if (value.loc.second !=location.blockY)continue
             if (value.loc.third !=location.blockZ)continue
 
-            return Pair(data.key,data.value)
+            return Pair(data.key, data.value)
         }
 
         return null
@@ -224,12 +224,13 @@ object UserShop {
     }
 
 
-    fun buy(id:Int,p:Player,stack: Boolean):Boolean{
+    @Synchronized
+    fun buy(id: Int, p: Player, stack: Boolean):Boolean{
 
         val data = get(id)
 
         if (p.inventory.firstEmpty() == -1){
-            sendMsg(p,"§cインベントリに空きがない可能性があります")
+            sendMsg(p, "§cインベントリに空きがない可能性があります")
 
             return false
         }
@@ -245,75 +246,67 @@ object UserShop {
 
             val price = data.price * item.amount
 
-            if (vault.getBalance(p.uniqueId) < price) {
-                sendMsg(p,"§cお金が足りません！")
+            if (!vault.withdraw(p.uniqueId, price)) {
+                sendMsg(p, "§cお金が足りません！")
                 return false
             }
 
-            vault.withdraw(p.uniqueId, price)
-
+            bank.deposit(data.ownerUUId, price, "ShopProfit")
             //オーナーにお金を送金
-            bank.deposit(data.ownerUUId,price, "ShopProfit")
 
-            p.inventory.addItem(item.clone())
+            Bukkit.getScheduler().runTask(pl, Runnable {
 
-//            container.remove(item)
-            container.removeItem(item)
+                p.inventory.addItem(item.clone())
+
+                container.removeItem(item)
+
+                data.container = container
+
+                set(id, data)
+
+                updateShop(id, p, container)
+
+                Database.logNormal(p, "BuyItem x ${item.amount} ID:$id", price)
+            })
+
+            return true
+        }
+
+        //一つだけの場合
+        if (!vault.withdraw(p.uniqueId, data.price)){
+            sendMsg(p, "§cお金が足りません！")
+            return false
+        }
+
+        bank.deposit(data.ownerUUId, data.price, "ShopProfit")
+
+        Bukkit.getScheduler().runTask(pl, Runnable {
+            val pItem = item.clone()
+
+            pItem.amount = 1
+
+            item.amount--
 
             data.container = container
 
             set(id, data)
 
-            updateShop(id,p,container)
+            updateShop(id, p, container)
 
-            Database.logNormal(p, "BuyItem x ${item.amount} ID:$id", price)
-            return true
-        }
+            p.inventory.addItem(pItem)
 
-        //一つだけの場合
-        if (vault.getBalance(p.uniqueId) < data.price){
-            sendMsg(p,"§cお金が足りません！")
-            return false
-        }
+            Database.logNormal(p, "BuyItem x 1 ID:$id", data.price)
 
-        vault.withdraw(p.uniqueId, data.price)
-
-        bank.deposit(data.ownerUUId,data.price, "ShopProfit")
-
-        val pItem = item.clone()
-
-        pItem.amount = 1
-
-        item.amount--
-
-//        if (item.amount == 0){
-//            container.removeItem()
-//        }else{
-//            container[container.size-1] = item
-//        }
-
-        data.container = container
-
-        set(id, data)
-
-        updateShop(id,p,container)
-
-        p.inventory.addItem(pItem)
-
-        Database.logNormal(p, "BuyItem x 1 ID:$id", data.price)
+        })
 
         return true
 
     }
 
-    fun sell(id:Int,p:Player,stack: Boolean):Boolean{
+    @Synchronized
+    fun sell(id: Int, p: Player, stack: Boolean):Boolean{
 
         val data = get(id)
-
-//        if (data.container.firstEmpty() == -1){
-//            sendMsg(p,"§c§lショップのコンテナが満タンの可能性があります")
-//            return false
-//        }
 
         val inv = p.inventory
 
@@ -325,7 +318,7 @@ object UserShop {
         if (stack){
 
             if (data.container.firstEmpty() == -1){
-                sendMsg(p,"§c§lショップのコンテナが満タンの可能性があります")
+                sendMsg(p, "§c§lショップのコンテナが満タンの可能性があります")
                 return false
             }
 
@@ -338,22 +331,24 @@ object UserShop {
                 val price = item.amount * data.price
 
                 //ショップオーナーからお金を引き出す
-                if (!bank.withdraw(data.ownerUUId,price,"ShopPurchase")){
-                    sendMsg(p,"§cショップのオーナーがお金を持っていないようです！")
+                if (!bank.withdraw(data.ownerUUId, price, "ShopPurchase")){
+                    sendMsg(p, "§cショップのオーナーがお金を持っていないようです！")
                     return false
                 }
-                Database.logNormal(p, "SellItem x ${item.amount} ID:$id", price)
 
-//                p.inventory.removeItem(item)
+                bank.deposit(p.uniqueId, price, "ShopProfit")
 
-                val containerItem = item.clone()
-                item.amount = 0
+                Bukkit.getScheduler().runTask(pl, Runnable {
 
-                data.container.addItem(containerItem)
+                    val containerItem = item.clone()
+                    item.amount = 0
 
-                updateShop(id,p,data.container)
+                    data.container.addItem(containerItem)
 
-                bank.deposit(p.uniqueId,price,"ShopProfit")
+                    updateShop(id, p, data.container)
+
+                    Database.logNormal(p, "SellItem x ${item.amount} ID:$id", price)
+                })
 
                 return true
             }
@@ -365,7 +360,7 @@ object UserShop {
         val last = data.container.last()
 
         if (last !=null && last.amount >=last.maxStackSize){
-            sendMsg(p,"§c§lショップのコンテナが満タンの可能性があります")
+            sendMsg(p, "§c§lショップのコンテナが満タンの可能性があります")
             return false
 
         }
@@ -383,20 +378,24 @@ object UserShop {
             val price = data.price
 
             //ショップオーナーからお金を引き出す
-            if (!bank.withdraw(data.ownerUUId,price,"ShopPurchase")){
-                sendMsg(p,"§cショップのオーナーがお金を持っていないようです！")
+            if (!bank.withdraw(data.ownerUUId, price, "ShopPurchase")){
+                sendMsg(p, "§cショップのオーナーがお金を持っていないようです！")
                 return false
             }
-            Database.logNormal(p, "SellItem x ${item.amount} ID:$id", price)
 
-            item.amount =  item.amount -1
+            bank.deposit(p.uniqueId, price, "ShopProfit")
 
-            data.container.addItem(pItem)
+            Bukkit.getScheduler().runTask(pl, Runnable {
 
-            updateShop(id,p,data.container)
 
-            bank.deposit(p.uniqueId,price,"ShopProfit")
+                item.amount =  item.amount -1
 
+                data.container.addItem(pItem)
+
+                updateShop(id, p, data.container)
+
+                Database.logNormal(p, "SellItem x ${item.amount} ID:$id", price)
+            })
 
             return true
         }
@@ -405,12 +404,13 @@ object UserShop {
 
     }
 
-    fun sellAll(id:Int,p:Player):Boolean{
+    @Synchronized
+    fun sellAll(id: Int, p: Player):Boolean{
 
         val data = get(id)
 
         if (data.container.firstEmpty() == -1){
-            sendMsg(p,"§c§lショップのコンテナが満タンの可能性があります")
+            sendMsg(p, "§c§lショップのコンテナが満タンの可能性があります")
             return false
         }
 
@@ -420,7 +420,6 @@ object UserShop {
 
         if (sellItem.type == Material.AIR)return false
 
-        var totalPrice = 0.0
         var totalItem = 0
 
         //スタックで買い取ってもらう
@@ -431,38 +430,38 @@ object UserShop {
             if (!sellItem.isSimilar(item))continue
 
             val price = item.amount * data.price
+            val amount = item.amount
 
             if (data.container.firstEmpty() == -1){
-                sendMsg(p,"§c§lショップのコンテナが満タンになりました！")
+                sendMsg(p, "§c§lショップのコンテナが満タンになりました！")
                 break
             }
 
             //ショップオーナーからお金を引き出す
             if (!bank.withdraw(data.ownerUUId,price,"ShopPurchase")){
-                sendMsg(p,"§cショップのオーナーのお金がなくなったようです！")
+                sendMsg(p, "§cショップのオーナーのお金がなくなったようです！")
                 break
             }
 
-            Database.logNormal(p, "SellItem x ${item.amount} ID:$id", price)
-
-//                p.inventory.removeItem(item)
+            Database.logNormal(p, "SellItem x $amount ID:$id", price)
 
             val containerItem = item.clone()
             item.amount = 0
 
             data.container.addItem(containerItem)
 
-            totalPrice += price
-            totalItem += containerItem.amount
+            totalItem += amount
         }
 
-        updateShop(id,p,data.container)
+        updateShop(id, p, data.container)
+
+        val totalPrice = totalItem*data.price
 
         if (totalPrice == 0.0){
             return false
         }
 
-        bank.deposit(p.uniqueId,totalPrice,"ShopProfit")
+        bank.deposit(p.uniqueId, totalPrice, "ShopProfit")
         p.sendMessage("§e売った数:$totalItem")
         p.sendMessage("§e入金額:$totalPrice")
 
@@ -473,24 +472,24 @@ object UserShop {
     /**
      * コンテナを開く
      */
-    fun openContainer(p:Player,id: Int){
+    fun openContainer(p: Player, id: Int){
 
         val data = get(id)
 
         p.openInventory(data.container)
 
-        Database.logNormal(p,"OpenShopContainer ID:$id",0.0)
+        Database.logNormal(p, "OpenShopContainer ID:$id", 0.0)
     }
 
-    fun containerInventory(id:Int,list:MutableList<ItemStack>?){
+    fun containerInventory(id: Int, list: MutableList<ItemStack>?){
 
         val data = get(id)
 
-        data.container = Bukkit.createInventory(null,54,CONTAINER_NAME+id)
+        data.container = Bukkit.createInventory(null, 54, CONTAINER_NAME + id)
 
         if (list == null){
-            set(id,data)
-            updateShop(id,Bukkit.getPlayer(data.ownerUUId)!!,data.container)
+            set(id, data)
+            updateShop(id, Bukkit.getPlayer(data.ownerUUId)!!, data.container)
             return
         }
 
@@ -499,23 +498,28 @@ object UserShop {
             data.container.addItem(item)
         }
 
-        set(id,data)
+        set(id, data)
 
     }
 
-    fun get(id:Int):UserShopData{
+    fun get(id: Int):UserShopData{
         return userShop[id]?:UserShopData()
     }
 
-    fun set(id:Int,data:UserShopData){
+    fun set(id: Int, data: UserShopData){
         userShop[id] = data
     }
 
-    fun getTradeItem(id:Int): ItemStack? {
+    fun getTradeItem(id: Int): ItemStack? {
         val data = get(id)
 
+        if (data.container.isEmpty)return null
+
         return if (data.isBuy){
-            data.container.getItem(data.container.firstEmpty()-1)
+            val index = if(data.container.firstEmpty() ==-1 ) 53 else data.container.firstEmpty()-1
+
+            data.container.getItem(index)
+
         }else{
             data.container.getItem(0)
         }
@@ -529,7 +533,7 @@ object UserShop {
         var server = "server"
         var world = "world"
 
-        var loc = Triple(0,0,0)//X Y Z
+        var loc = Triple(0, 0, 0)//X Y Z
 
 //        var container = mutableListOf<ItemStack>()
         lateinit var container : Inventory

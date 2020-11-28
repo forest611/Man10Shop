@@ -18,9 +18,13 @@ import red.man10.man10shop.merchant.ShopEvent
 import red.man10.man10shop.usershop.UserShop
 import java.lang.Exception
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 import java.util.concurrent.LinkedBlockingQueue
 
 class Man10Shop : JavaPlugin(){
+
+    lateinit var es : ExecutorService
 
     companion object{
 
@@ -106,6 +110,8 @@ class Man10Shop : JavaPlugin(){
         getCommand("createshop")!!.setExecutor(Commands)
         getCommand("editshop")!!.setExecutor(red.man10.man10shop.usershop.ShopEvent)
 
+        es = Executors.newCachedThreadPool()
+
     }
 
     override fun onDisable() {
@@ -128,6 +134,7 @@ class Man10Shop : JavaPlugin(){
 
                 try {
 
+
                     val id = args[1].toInt()
 
                     //ショップが編集中だった場合
@@ -136,7 +143,7 @@ class Man10Shop : JavaPlugin(){
                         return false
                     }
 
-                    GlobalScope.launch {
+                    es.execute {
                         if (UserShop.buy(id,sender,args[2].toBoolean())){
                             sendMsg(sender,"§a取引成功")
                         }else{
@@ -165,7 +172,8 @@ class Man10Shop : JavaPlugin(){
                         return false
                     }
 
-                    GlobalScope.launch {
+                    es.execute {
+
                         if (args[2] == "all"){
 
                             if (checkMap[sender]==null || checkMap[sender]!=id ){
@@ -173,17 +181,17 @@ class Man10Shop : JavaPlugin(){
                                 sendMsg(sender,"§a本当にすべて売却しますか？")
                                 sendHoverText(sender,"§c§l[売っちゃう！]","","usershop sellusershop $id all")
                                 checkMap[sender] = id
-                                return@launch
+                                return@execute
                             }
 
                             checkMap.remove(sender)
 
                             if (UserShop.sellAll(id,sender)){
                                 sendMsg(sender,"§a取引成功")
-                                return@launch
+                                return@execute
                             }
                             sendMsg(sender,"§c取引失敗")
-                            return@launch
+                            return@execute
                         }
 
                         if (UserShop.sell(id,sender,args[2].toBoolean())){
@@ -191,7 +199,9 @@ class Man10Shop : JavaPlugin(){
                         }else{
                             sendMsg(sender,"§c取引失敗")
                         }
+
                     }
+
                     return true
 
 
