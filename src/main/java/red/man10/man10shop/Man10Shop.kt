@@ -1,7 +1,5 @@
 package red.man10.man10shop
 
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import net.md_5.bungee.api.chat.ClickEvent
 import net.md_5.bungee.api.chat.ComponentBuilder
 import net.md_5.bungee.api.chat.HoverEvent
@@ -10,13 +8,12 @@ import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 import org.bukkit.plugin.java.JavaPlugin
-import red.man10.man10offlinebank.BankAPI
+import red.man10.man10bank.BankAPI
 import red.man10.man10shop.merchant.Commands
 import red.man10.man10shop.merchant.MerchantShop
 import red.man10.man10shop.merchant.MerchantShop.MerchantShopData
 import red.man10.man10shop.merchant.ShopEvent
 import red.man10.man10shop.usershop.UserShop
-import java.lang.Exception
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
