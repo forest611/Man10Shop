@@ -87,7 +87,7 @@ class Man10Shop : JavaPlugin(){
         pl = this
 
         pluginEnable = config.getBoolean("pluginEnabled",true)
-        maxPrice = config.getDouble("maxPrice",100000000.0)
+        maxPrice = config.getDouble("maxPrice",10000000.0)
         enableWorld = config.getStringList("enableWorld")
         cost = config.getDouble("cost",10000.0)
 

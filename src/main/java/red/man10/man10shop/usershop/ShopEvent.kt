@@ -290,7 +290,7 @@ object ShopEvent : Listener, CommandExecutor {
 
             if (price<0.1|| price> maxPrice){
                 sendMsg(sender,"§c§l値段設定に問題があります！")
-                sendMsg(sender,"§c§l0.1円以上、$maxPrice 未満に設定してください！")
+                sendMsg(sender,"§c§l1円以上、$maxPrice 未満に設定してください！")
                 return true
             }
 
