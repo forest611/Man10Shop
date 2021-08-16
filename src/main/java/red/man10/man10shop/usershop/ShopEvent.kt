@@ -31,11 +31,17 @@ import red.man10.man10shop.Man10Shop.Companion.sendHoverText
 import red.man10.man10shop.Man10Shop.Companion.sendMsg
 import red.man10.man10shop.Man10Shop.Companion.sendOP
 import red.man10.man10shop.Man10Shop.Companion.vault
+import red.man10.man10shop.VaultManager
 
 object ShopEvent : Listener, CommandExecutor {
 
     val isEdit = mutableListOf<Int>()
 
+
+    //　金額文字列作成
+    public fun getPriceString(price: Double): String? {
+        return String.format("§e§l%,d円§f", price.toLong())
+    }
 
     //ショップ看板の設置、看板内容の書き換え
     @EventHandler
@@ -171,7 +177,7 @@ object ShopEvent : Listener, CommandExecutor {
             p.sendMessage("§a==========================================")
             p.sendMessage("§bアイテム名:§f$name")
             p.sendMessage("§b説明:§f$lore")
-            p.sendMessage("§e値段:${String.format("%,.1f",shop.second.price)}")
+            p.sendMessage("§e金額: ${getPriceString(shop.second.price)}")
             if (shop.second.isBuy){
                 sendHoverText(p,"§d§l[スタックで購入する]","","usershop buyusershop ${shop.first} true")
                 sendHoverText(p,"§d§l[一つ購入する]","","usershop buyusershop ${shop.first} false")

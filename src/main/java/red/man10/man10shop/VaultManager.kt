@@ -42,7 +42,7 @@ class VaultManager(private val plugin: JavaPlugin) {
     fun showBalance(uuid: UUID?) {
         val p: OfflinePlayer? = Bukkit.getOfflinePlayer(uuid!!).player
         val money = getBalance(uuid)
-        p!!.player!!.sendMessage(ChatColor.YELLOW.toString() + "あなたの所持金は$" + money)
+        p!!.player!!.sendMessage(ChatColor.YELLOW.toString() + "あなたの所持金は" + getPriceString(money))
     }
 
     /////////////////////////////////////
@@ -53,7 +53,7 @@ class VaultManager(private val plugin: JavaPlugin) {
         val resp = economy!!.withdrawPlayer(p.name, money)
         if (resp.transactionSuccess()) {
             if (p.isOnline) {
-                p.player!!.sendMessage(ChatColor.YELLOW.toString() + "$" + money + "支払いました")
+                p.player!!.sendMessage(ChatColor.YELLOW.toString() +  getPriceString(money) + "支払いました")
             }
             return true
         }
@@ -68,7 +68,7 @@ class VaultManager(private val plugin: JavaPlugin) {
         val resp = economy!!.depositPlayer(p.name, money)
         if (resp.transactionSuccess()) {
             if (p.isOnline) {
-                p.player!!.sendMessage(ChatColor.YELLOW.toString() + "$" + money + "受取りました")
+                p.player!!.sendMessage(ChatColor.YELLOW.toString() +  getPriceString(money) + "受取りました")
             }
             return true
         }
@@ -82,4 +82,24 @@ class VaultManager(private val plugin: JavaPlugin) {
     init {
         setupEconomy()
     }
+
+    //　金額文字列作成
+    public fun getPriceString(price: Double): String? {
+        return String.format("§e§l%,d円§f", price.toLong())
+    }
+
+    fun getJpBal(balance: Double): String? {
+        val `val` = balance.toLong()
+        var addition = ""
+        var form = "万"
+        var man = `val` / 10000
+        if (`val` >= 100000000) {
+            man = `val` / 100000000
+            form = "億"
+            val mann = (`val` - man * 100000000) / 10000
+            addition = mann.toString() + "万"
+        }
+        return man.toString() + form + addition
+    }
+
 }
