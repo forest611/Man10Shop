@@ -47,7 +47,7 @@ class Man10Shop : JavaPlugin(){
 
         var pluginEnable = true
 
-        var cost = 10000.0
+        var cost = 1000.0
 
         var enableWorld = mutableListOf<String>()
 
